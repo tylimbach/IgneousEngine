@@ -26,6 +26,7 @@ namespace bve {
 
 	private:
 		void loadModels();
+		static void pollGlfw(bool &stop);
 		void generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices);
 		void createPipelineLayout();
 		void createPipeline();
@@ -33,6 +34,7 @@ namespace bve {
 		void drawFrame();
 		void recreateSwapChain();
 		void recordCommandBuffer(int index);
+		void freeCommandBuffers();
 
 		BveWindow bveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		BveDevice bveDevice{ bveWindow };

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <array>
+#include <thread>
 
 namespace bve {
 
@@ -38,12 +39,12 @@ namespace bve {
 		for (int i = 0; i < inVertices.size() - 1; i++) {
 			glm::vec2 position = { (inVertices[i].position + inVertices[i + 1].position) * 0.5f };
 			glm::vec3 color = { (inVertices[i].color + inVertices[i + 1].color) * 0.5f };
-			newVertices.push_back(BveModel::Vertex(position, color));
+			newVertices.push_back({ position, color });
 		}
 
 		glm::vec2 position = { (inVertices.back().position + inVertices[0].position) * 0.5f};
 		glm::vec3 color = { (inVertices.back().color + inVertices[0].color) * 0.5f };
-		newVertices.push_back(BveModel::Vertex(position, color));
+		newVertices.push_back({ position, color });
 
 		for (int i = 0; i < inVertices.size() - 1; i++) {
 			newShapes.push_back({ newVertices[i], inVertices[i + 1], newVertices[i + 1]});
@@ -61,7 +62,7 @@ namespace bve {
 		};
 
 		std::vector<BveModel::Vertex> complexVertices{};
-		generateVertices(3, vertices, complexVertices);
+		generateVertices(8, vertices, complexVertices);
 		
 		bveModel = std::make_unique<BveModel>(bveDevice, complexVertices);
 	}
@@ -78,8 +79,13 @@ namespace bve {
 		}
 	}
 
-	void BasicApp::createPipeline() {
-		PipelineConfigInfo pipelineConfig = BvePipeline::defaultPipelineConfigInfo(bveSwapChain->width(), bveSwapChain->height());
+	void BasicApp::createPipeline()
+{
+		assert(bveSwapChain != nullptr && "Cannot create pipeline before swap chain");
+		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
+		
+		PipelineConfigInfo pipelineConfig{};
+		BvePipeline::defaultPipelineConfigInfo(pipelineConfig);
 		pipelineConfig.renderPass = bveSwapChain->getRenderPass();
 		pipelineConfig.pipelineLayout = pipelineLayout;
 		bvePipeline = std::make_unique<BvePipeline>(
@@ -89,7 +95,8 @@ namespace bve {
 			pipelineConfig);
 	}
 
-	void BasicApp::recreateSwapChain() {
+	void BasicApp::recreateSwapChain()
+	{
 		VkExtent2D extent = bveWindow.getExtent();
 		while (extent.width == 0 || extent.height == 0) {
 			extent = bveWindow.getExtent();
@@ -97,12 +104,24 @@ namespace bve {
 		}
 
 		vkDeviceWaitIdle(bveDevice.device());
+
+		if (bveSwapChain == nullptr) {
+			bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent);
+		} else {
+			bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent, std::move(bveSwapChain));
+			if (bveSwapChain->imageCount() != commandBuffers.size()) {
+				freeCommandBuffers();
+				createCommandBuffers();
+			}
+		}
+
 		bveSwapChain = nullptr;
 		bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent);
 		createPipeline();
 	}
 
-	void BasicApp::createCommandBuffers() {
+	void BasicApp::createCommandBuffers()
+	{
 		commandBuffers.resize(bveSwapChain->imageCount());
 
 		VkCommandBufferAllocateInfo allocInfo{};
@@ -116,7 +135,19 @@ namespace bve {
 		}
 	}
 
-	void BasicApp::recordCommandBuffer(int imageIndex) {
+	void BasicApp::freeCommandBuffers()
+	{
+		vkFreeCommandBuffers(
+			bveDevice.device(),
+			bveDevice.getCommandPool(),
+			static_cast<uint32_t>(commandBuffers.size()),
+			commandBuffers.data());
+		commandBuffers.clear();
+	}
+
+
+	void BasicApp::recordCommandBuffer(int imageIndex)
+	{
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -133,12 +164,23 @@ namespace bve {
 		renderPassInfo.renderArea.extent = bveSwapChain->getSwapChainExtent();
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+		clearValues[0].color = {{0.1f, 0.1f, 0.1f, 1.0f}};
 		clearValues[1].depthStencil = { 1.0f, 0 };
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = static_cast<float>(bveSwapChain->getSwapChainExtent().width);
+		viewport.height = static_cast<float>(bveSwapChain->getSwapChainExtent().height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		VkRect2D scissor{ {0, 0}, bveSwapChain->getSwapChainExtent() };
+		vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+		vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
 
 		bvePipeline->bind(commandBuffers[imageIndex]);
 		bveModel->bind(commandBuffers[imageIndex]);
@@ -153,7 +195,8 @@ namespace bve {
 		}
 	}
 
-	void BasicApp::drawFrame() {
+	void BasicApp::drawFrame()
+	{
 		uint32_t imageIndex;
 		VkResult result = bveSwapChain->acquireNextImage(&imageIndex);
 
