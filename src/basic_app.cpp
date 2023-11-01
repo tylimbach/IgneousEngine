@@ -1,5 +1,9 @@
 #include "basic_app.h"
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -7,6 +11,12 @@
 #include <thread>
 
 namespace bve {
+
+	struct SimplePushConstantData {
+		glm::mat2 transform{ 1.0f };
+		glm::vec2 offset;
+		alignas(16) glm::vec2 color;
+	};
 
 	BasicApp::BasicApp() {
 		loadModels();
@@ -19,7 +29,8 @@ namespace bve {
 		vkDestroyPipelineLayout(bveDevice.device(), pipelineLayout, nullptr);
 	}
 
-	void BasicApp::run() {
+	void BasicApp::run()
+	{
 		while (!bveWindow.shouldClose()) {
 			glfwPollEvents();
 			drawFrame();
@@ -28,7 +39,8 @@ namespace bve {
 		vkDeviceWaitIdle(bveDevice.device());
 	}
 
-	void BasicApp::generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices) {
+	void BasicApp::generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices)
+	{
 		if (subdivisionIterations == 0) {
 			outVertices.insert(std::end(outVertices), std::begin(inVertices), std::end(inVertices));
 			return;
@@ -54,7 +66,8 @@ namespace bve {
 		generateVertices(subdivisionIterations - 1, newShapes.back(), outVertices);
 	}
 
-	void BasicApp::loadModels() {
+	void BasicApp::loadModels()
+	{
 		std::vector<BveModel::Vertex> vertices{
 			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
@@ -62,18 +75,24 @@ namespace bve {
 		};
 
 		std::vector<BveModel::Vertex> complexVertices{};
-		generateVertices(8, vertices, complexVertices);
+		generateVertices(6, vertices, complexVertices);
 		
 		bveModel = std::make_unique<BveModel>(bveDevice, complexVertices);
 	}
 
-	void BasicApp::createPipelineLayout() {
+	void BasicApp::createPipelineLayout()
+	{
+		VkPushConstantRange pushConstantRange;
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(SimplePushConstantData);
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 0;
 		pipelineLayoutInfo.pSetLayouts = nullptr;
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 		if (vkCreatePipelineLayout(bveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create pipeline info");
 		}
@@ -148,6 +167,9 @@ namespace bve {
 
 	void BasicApp::recordCommandBuffer(int imageIndex)
 	{
+		static int frame = 0;
+		frame = (frame + 1) % 10000;
+
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -164,7 +186,7 @@ namespace bve {
 		renderPassInfo.renderArea.extent = bveSwapChain->getSwapChainExtent();
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+		clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
 		clearValues[1].depthStencil = { 1.0f, 0 };
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
@@ -184,9 +206,14 @@ namespace bve {
 
 		bvePipeline->bind(commandBuffers[imageIndex]);
 		bveModel->bind(commandBuffers[imageIndex]);
-		bveModel->draw(commandBuffers[imageIndex]);
 
-		vkCmdDraw(commandBuffers[imageIndex], 3, 1, 0, 0);
+		for (int j = 0; j < 1; j++) {
+			SimplePushConstantData push{};
+			push.offset = { -1.0f + 0.0002f * frame, -0.4f + j * 0.25f };
+			push.color = { 0.0f + frame * 0.0001f, 0.0f + 0.2f + 0.2f * j };
+			vkCmdPushConstants(commandBuffers[imageIndex], pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
+			bveModel->draw(commandBuffers[imageIndex]);
+		}
 
 		vkCmdEndRenderPass(commandBuffers[imageIndex]);
 
