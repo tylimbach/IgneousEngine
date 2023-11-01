@@ -18,7 +18,10 @@ add_executable(
     "src/bve_pipeline.h" "src/bve_pipeline.cpp"
     "src/bve_device.cpp" "src/bve_device.h"
     "src/bve_swap_chain.cpp" "src/bve_swap_chain.h" 
-    "src/bve_model.h" "src/bve_model.cpp")
+    "src/bve_model.h" "src/bve_model.cpp" 
+    "src/entity_manager.h" 
+    "src/util/sparse_set.h"
+    "src/component_registry.h")
 
 # Include the directories
 target_include_directories(
