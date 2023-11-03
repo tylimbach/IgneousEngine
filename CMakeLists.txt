@@ -21,7 +21,7 @@ add_executable(
     "src/bve_model.h" "src/bve_model.cpp" 
     "src/entity_manager.h" 
     "src/util/sparse_set.h"
-    "src/component_registry.h")
+    "src/component_registry.h" )
 
 # Include the directories
 target_include_directories(

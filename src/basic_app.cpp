@@ -10,6 +10,8 @@
 #include <array>
 #include <thread>
 
+#include "entity_manager.h"
+
 namespace bve {
 
 	struct SimplePushConstantData {
@@ -74,10 +76,39 @@ namespace bve {
 			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 		};
 
+		std::vector<BveModel::Vertex> vertices2{
+			{{0.0f, 0.6f}, {0.6f, 1.0f, 0.0f}},
+			{{0.5f, 0.85f}, {0.0f, 0.6f, 1.0f}},
+			{{-0.5f, 0.7f}, {1.0f, 0.0f, 0.6f}}
+		};
+
+		EntityManager entityManager{};
+
+		struct RenderComponent
+		{
+			std::vector<BveModel::Vertex>* vertices;
+		};
+
+		Entity firstTriangle = entityManager.createEntity();
 		std::vector<BveModel::Vertex> complexVertices{};
+		RenderComponent firstComponent{ &complexVertices };
 		generateVertices(6, vertices, complexVertices);
+		entityManager.addComponent<RenderComponent>(firstTriangle, firstComponent);
+
+		Entity secondTriangle = entityManager.createEntity();
+		std::vector<BveModel::Vertex> complexVertices2{};
+		RenderComponent secondComponent{ &complexVertices2 };
+		generateVertices(3, vertices2, complexVertices2);
+		entityManager.addComponent<RenderComponent>(secondTriangle, secondComponent);
+
+		SparseSet<RenderComponent>& renderItems = entityManager.getAllComponents<RenderComponent>();
+
+		std::vector<BveModel::Vertex> combinedVertices{};
+		for (RenderComponent item : renderItems) {
+			combinedVertices.insert(combinedVertices.end(), item.vertices->begin(), item.vertices->end());
+		}
 		
-		bveModel = std::make_unique<BveModel>(bveDevice, complexVertices);
+		bveModel = std::make_unique<BveModel>(bveDevice, combinedVertices);
 	}
 
 	void BasicApp::createPipelineLayout()
@@ -99,7 +130,7 @@ namespace bve {
 	}
 
 	void BasicApp::createPipeline()
-{
+	{
 		assert(bveSwapChain != nullptr && "Cannot create pipeline before swap chain");
 		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 		
