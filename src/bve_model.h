@@ -25,9 +25,11 @@ namespace bve {
 
 		BveModel(const BveModel&) = delete;
 		BveModel operator=(const BveModel&) = delete;
+		BveModel(BveModel&& other) = default;
+		BveModel& operator=(BveModel&& other) = default;
 
-		void bind(VkCommandBuffer commandBuffer);
-		void draw(VkCommandBuffer commandBuffer);
+		void bind(VkCommandBuffer commandBuffer) const;
+		void draw(VkCommandBuffer commandBuffer) const;
 
 	private:
 		void createVertexBuffers(const std::vector<Vertex>& vertices);

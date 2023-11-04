@@ -1,15 +1,14 @@
 #pragma once
 
-#include "stdint.h"
+#include "entity_component_registry.h"
+#include "entity_component_view.h"
 
 #include <tuple>
-#include <unordered_map>
 #include <unordered_set>
 #include <any>
 #include <atomic>
+#include <span>
 
-#include "component_registry.h"
-#include "util/sparse_set.h"
 
 namespace bve
 {
@@ -29,36 +28,40 @@ namespace bve
 		}
 
 		template <typename T>
-		void addComponent(Entity& entity, T component)
+		bool hasComponent(Entity entity)
 		{
-			SparseSet<T>& set = ComponentRegistry<T>::get();
-			set.insert(entity, component);
+			return EntityComponentRegistry<T>::contains(entity);
 		}
 
 		template <typename T>
-		T* getComponent(Entity entity)
+		void addComponent(Entity entity, T& component)
 		{
-			SparseSet<T>& set = ComponentRegistry<T>::get();
-			return set.get(entity);
+			EntityComponentRegistry<T>::insert(entity, component);
+		}
+
+		template <typename T>
+		T& getComponent(Entity entity)
+		{
+			return EntityComponentRegistry<T>::getComponent(entity);
 		}
 
 		template <typename... T>
-		std::tuple<T*...> getComponents(Entity entity)
+		std::tuple<T...> getComponents(Entity entity)
 		{
-			return { EntityManager::getComponent<T>(entity)... };
+			return { this->getComponent<T>(entity)... };
 		}
 
-		template <typename T>
-		SparseSet<T>& getAllComponents()
-		{
-			return ComponentRegistry<T>::get();
+		template<typename T>
+		EntityComponentView<T> view() {
+			std::span<uint32_t> entities = EntityComponentRegistry<T>::viewEntities();
+			std::span<T> components = EntityComponentRegistry<T>::viewComponents();
+			return EntityComponentView<T>(entities, components);
 		}
 
 		template <typename T>
 		bool removeComponent(Entity entity)
 		{
-			SparseSet<T>& set = ComponentRegistry<T>::get();
-			return set.erase(entity);
+			return EntityComponentRegistry<T>::erase(entity);
 		}
 
 	private:

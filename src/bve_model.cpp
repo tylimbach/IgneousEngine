@@ -31,13 +31,13 @@ namespace bve {
 	}
 
 
-	void BveModel::bind(VkCommandBuffer commandBuffer) {
+	void BveModel::bind(VkCommandBuffer commandBuffer) const {
 		VkBuffer buffers[] = { vertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 	}
 
-	void BveModel::draw(VkCommandBuffer commandBuffer) {
+	void BveModel::draw(VkCommandBuffer commandBuffer) const {
 		vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
 	}
 

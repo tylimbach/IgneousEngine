@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "entity_manager.h"
+
 namespace bve {
 
 	class BasicApp {
@@ -25,9 +27,9 @@ namespace bve {
 		void run();
 
 	private:
-		void loadModels();
+		void loadEntities();
 		static void pollGlfw(bool &stop);
-		void generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices);
+		static void generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices);
 		void createPipelineLayout();
 		void createPipeline();
 		void createCommandBuffers();
@@ -35,13 +37,14 @@ namespace bve {
 		void recreateSwapChain();
 		void recordCommandBuffer(int index);
 		void freeCommandBuffers();
+		void render(VkCommandBuffer commandBuffer);
 
 		BveWindow bveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		BveDevice bveDevice{ bveWindow };
+		EntityManager entityManager{};
 		std::unique_ptr<BveSwapChain> bveSwapChain;
 		std::unique_ptr<BvePipeline> bvePipeline;
 		VkPipelineLayout pipelineLayout;
 		std::vector<VkCommandBuffer> commandBuffers;
-		std::unique_ptr<BveModel> bveModel;
 	};
 }

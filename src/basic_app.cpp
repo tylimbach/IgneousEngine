@@ -3,6 +3,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -11,17 +12,18 @@
 #include <thread>
 
 #include "entity_manager.h"
+#include "components/components.h"
 
 namespace bve {
 
 	struct SimplePushConstantData {
 		glm::mat2 transform{ 1.0f };
 		glm::vec2 offset;
-		alignas(16) glm::vec2 color;
+		alignas(16) glm::vec3 color;
 	};
 
 	BasicApp::BasicApp() {
-		loadModels();
+		loadEntities();
 		createPipelineLayout();
 		recreateSwapChain();
 		createCommandBuffers();
@@ -41,13 +43,13 @@ namespace bve {
 		vkDeviceWaitIdle(bveDevice.device());
 	}
 
-	void BasicApp::generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices)
+	void BasicApp::generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex>& inVertices, std::vector<BveModel::Vertex>& outVertices)
 	{
 		if (subdivisionIterations == 0) {
 			outVertices.insert(std::end(outVertices), std::begin(inVertices), std::end(inVertices));
 			return;
 		}
-		
+
 		std::vector<BveModel::Vertex> newVertices{};
 		std::vector<std::vector<BveModel::Vertex>> newShapes{};
 		for (int i = 0; i < inVertices.size() - 1; i++) {
@@ -56,59 +58,49 @@ namespace bve {
 			newVertices.push_back({ position, color });
 		}
 
-		glm::vec2 position = { (inVertices.back().position + inVertices[0].position) * 0.5f};
+		glm::vec2 position = { (inVertices.back().position + inVertices[0].position) * 0.5f };
 		glm::vec3 color = { (inVertices.back().color + inVertices[0].color) * 0.5f };
 		newVertices.push_back({ position, color });
 
 		for (int i = 0; i < inVertices.size() - 1; i++) {
-			newShapes.push_back({ newVertices[i], inVertices[i + 1], newVertices[i + 1]});
+			newShapes.push_back({ newVertices[i], inVertices[i + 1], newVertices[i + 1] });
 			generateVertices(subdivisionIterations - 1, newShapes[i], outVertices);
 		}
-		newShapes.push_back({ newVertices.back(), inVertices[0], newVertices[0]});
+		newShapes.push_back({ newVertices.back(), inVertices[0], newVertices[0] });
 		generateVertices(subdivisionIterations - 1, newShapes.back(), outVertices);
 	}
 
-	void BasicApp::loadModels()
+	void BasicApp::loadEntities()
 	{
+		Entity firstTriangle = entityManager.createEntity();
 		std::vector<BveModel::Vertex> vertices{
 			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
 			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 		};
-
-		std::vector<BveModel::Vertex> vertices2{
-			{{0.0f, 0.6f}, {0.6f, 1.0f, 0.0f}},
-			{{0.5f, 0.85f}, {0.0f, 0.6f, 1.0f}},
-			{{-0.5f, 0.7f}, {1.0f, 0.0f, 0.6f}}
-		};
-
-		EntityManager entityManager{};
-
-		struct RenderComponent
-		{
-			std::vector<BveModel::Vertex>* vertices;
-		};
-
-		Entity firstTriangle = entityManager.createEntity();
 		std::vector<BveModel::Vertex> complexVertices{};
-		RenderComponent firstComponent{ &complexVertices };
 		generateVertices(6, vertices, complexVertices);
-		entityManager.addComponent<RenderComponent>(firstTriangle, firstComponent);
+
+		RenderComponent renderCmp1(make_shared<BveModel>(bveDevice, complexVertices), { .1f, .8f, .1f });
+		entityManager.addComponent<RenderComponent>(firstTriangle, renderCmp1);
+
+		Transform2dComponent transformCmp1{};
+		entityManager.addComponent<Transform2dComponent>(firstTriangle, transformCmp1);
 
 		Entity secondTriangle = entityManager.createEntity();
+		std::vector<BveModel::Vertex> vertices2{
+			{{0.5f, 0.5f}, {0.6f, 1.0f, 0.0f}},
+			{{0.0f, 0.85f}, {0.0f, 0.6f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 0.0f, 0.6f}}
+		};
 		std::vector<BveModel::Vertex> complexVertices2{};
-		RenderComponent secondComponent{ &complexVertices2 };
 		generateVertices(3, vertices2, complexVertices2);
-		entityManager.addComponent<RenderComponent>(secondTriangle, secondComponent);
 
-		SparseSet<RenderComponent>& renderItems = entityManager.getAllComponents<RenderComponent>();
+		RenderComponent renderCmp2(make_shared<BveModel>(bveDevice, complexVertices2), { .8f, .1f, .1f });
+		entityManager.addComponent<RenderComponent>(secondTriangle, renderCmp2);
 
-		std::vector<BveModel::Vertex> combinedVertices{};
-		for (RenderComponent item : renderItems) {
-			combinedVertices.insert(combinedVertices.end(), item.vertices->begin(), item.vertices->end());
-		}
-		
-		bveModel = std::make_unique<BveModel>(bveDevice, combinedVertices);
+		Transform2dComponent transformCmp2{};
+		entityManager.addComponent<Transform2dComponent>(secondTriangle, transformCmp2);
 	}
 
 	void BasicApp::createPipelineLayout()
@@ -133,7 +125,7 @@ namespace bve {
 	{
 		assert(bveSwapChain != nullptr && "Cannot create pipeline before swap chain");
 		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
-		
+
 		PipelineConfigInfo pipelineConfig{};
 		BvePipeline::defaultPipelineConfigInfo(pipelineConfig);
 		pipelineConfig.renderPass = bveSwapChain->getRenderPass();
@@ -195,12 +187,8 @@ namespace bve {
 		commandBuffers.clear();
 	}
 
-
 	void BasicApp::recordCommandBuffer(int imageIndex)
 	{
-		static int frame = 0;
-		frame = (frame + 1) % 10000;
-
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -217,7 +205,7 @@ namespace bve {
 		renderPassInfo.renderArea.extent = bveSwapChain->getSwapChainExtent();
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
+		clearValues[0].color = { {0.01f, 0.01f, 0.01f, 1.0f} };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
@@ -235,21 +223,35 @@ namespace bve {
 		vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
 		vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
 
-		bvePipeline->bind(commandBuffers[imageIndex]);
-		bveModel->bind(commandBuffers[imageIndex]);
-
-		for (int j = 0; j < 1; j++) {
-			SimplePushConstantData push{};
-			push.offset = { -1.0f + 0.0002f * frame, -0.4f + j * 0.25f };
-			push.color = { 0.0f + frame * 0.0001f, 0.0f + 0.2f + 0.2f * j };
-			vkCmdPushConstants(commandBuffers[imageIndex], pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
-			bveModel->draw(commandBuffers[imageIndex]);
-		}
+		render(commandBuffers[imageIndex]);
 
 		vkCmdEndRenderPass(commandBuffers[imageIndex]);
 
 		if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to record command buffer");
+		}
+	}
+
+	void BasicApp::render(VkCommandBuffer commandBuffer)
+	{
+		bvePipeline->bind(commandBuffer);
+
+		EntityComponentView<RenderComponent> view = entityManager.view<RenderComponent>();
+		for (const auto&& [entity, modelComponent] : view) {
+			SimplePushConstantData push{};
+
+			push.color = modelComponent.color;
+			if (entityManager.hasComponent<Transform2dComponent>(entity)) {
+				Transform2dComponent& transformComponent = entityManager.getComponent<Transform2dComponent>(entity);
+				push.offset = transformComponent.translation;
+				push.transform = transformComponent.mat2();
+
+				transformComponent.rotation = glm::mod(transformComponent.rotation + 0.001f, glm::two_pi<float>());
+			}
+
+			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
+			modelComponent.model->bind(commandBuffer);
+			modelComponent.model->draw(commandBuffer);
 		}
 	}
 
@@ -269,7 +271,7 @@ namespace bve {
 
 		recordCommandBuffer(imageIndex);
 		result = bveSwapChain->submitCommandBuffers(&commandBuffers[imageIndex], &imageIndex);
-		
+
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || bveWindow.wasWindowResized()) {
 			bveWindow.resetWindowResizedFlag();
 			recreateSwapChain();
