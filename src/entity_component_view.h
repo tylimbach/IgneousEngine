@@ -3,7 +3,7 @@
 #include "stdint.h"
 #include <tuple>
 #include <span>
-#include <assert.h>
+#include <cassert>
 
 namespace bve {
 	template<typename T>
@@ -15,7 +15,7 @@ namespace bve {
 	public:
 		EntityComponentView(std::span<uint32_t> eSpan, std::span<T> cSpan)
 			: entitySpan(eSpan), componentSpan(cSpan) {
-			assert(entitySpan.size() == componentSpan.size());
+			assert(entitySpan.size() == componentSpan.size() && "Entities & component spans have different lengths");
 		}
 
 		class Iterator {

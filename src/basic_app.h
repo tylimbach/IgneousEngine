@@ -2,7 +2,7 @@
 
 #include "bve_window.h"
 #include "bve_pipeline.h"
-#include "bve_swap_chain.h"
+#include "renderer.h"
 #include "bve_model.h"
 
 #include <memory>
@@ -27,24 +27,20 @@ namespace bve {
 		void run();
 
 	private:
+		static void generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex>& inVertices, std::vector<BveModel::Vertex>& outVertices);
+
 		void loadEntities();
-		static void pollGlfw(bool &stop);
-		static void generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex> &inVertices, std::vector<BveModel::Vertex> &outVertices);
 		void createPipelineLayout();
 		void createPipeline();
-		void createCommandBuffers();
-		void drawFrame();
-		void recreateSwapChain();
-		void recordCommandBuffer(int index);
-		void freeCommandBuffers();
 		void render(VkCommandBuffer commandBuffer);
 
 		BveWindow bveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		BveDevice bveDevice{ bveWindow };
-		EntityManager entityManager{};
-		std::unique_ptr<BveSwapChain> bveSwapChain;
+		Renderer renderer{ bveWindow, bveDevice };
+
 		std::unique_ptr<BvePipeline> bvePipeline;
 		VkPipelineLayout pipelineLayout;
-		std::vector<VkCommandBuffer> commandBuffers;
+
+		EntityManager entityManager{};
 	};
 }
