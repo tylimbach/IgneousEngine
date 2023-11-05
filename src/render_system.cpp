@@ -64,6 +64,8 @@ namespace bve {
 	{
 		bvePipeline->bind(commandBuffer);
 
+		glm::mat4 projectionView = camera.getProjection() * camera.getView();
+
 		EntityComponentView<RenderComponent> view = entityManager.view<RenderComponent>();
 		for (const auto&& [entity, modelComponent] : view) {
 			SimplePushConstantData push{};
@@ -71,7 +73,7 @@ namespace bve {
 			push.color = modelComponent.color;
 			if (entityManager.hasComponent<TransformComponent>(entity)) {
 				auto& transformComponent = entityManager.getComponent<TransformComponent>(entity);
-				push.transform = camera.getProjection() * transformComponent.mat4();
+				push.transform = projectionView * transformComponent.mat4();
 
 				transformComponent.rotation.y = glm::mod(transformComponent.rotation.y + 0.0005f, glm::two_pi<float>());
 				transformComponent.rotation.x = glm::mod(transformComponent.rotation.x + 0.0001f, glm::two_pi<float>());
