@@ -11,33 +11,26 @@
 
 #include "entity_manager.h"
 #include "components/components.h"
+#include "render_system.h"
 
 namespace bve {
 
-	struct SimplePushConstantData {
-		glm::mat2 transform{ 1.0f };
-		glm::vec2 offset;
-		alignas(16) glm::vec3 color;
-	};
-
 	BasicApp::BasicApp() {
 		loadEntities();
-		createPipelineLayout();
-		createPipeline();
 	}
 
-	BasicApp::~BasicApp() {
-		vkDestroyPipelineLayout(bveDevice.device(), pipelineLayout, nullptr);
-	}
+	BasicApp::~BasicApp() = default;
 
 	void BasicApp::run()
 	{
+		RenderSystem renderSystem{ bveDevice, renderer.getSwapChainRenderPass(), entityManager };
+
 		while (!bveWindow.shouldClose()) {
 			glfwPollEvents();
 
 			if (VkCommandBuffer commandBuffer = renderer.beginFrame()) {
 				renderer.beginSwapChainRenderPass(commandBuffer);
-				render(commandBuffer);
+				renderSystem.render(commandBuffer);
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 			}
@@ -46,7 +39,65 @@ namespace bve {
 		vkDeviceWaitIdle(bveDevice.device());
 	}
 
-	void BasicApp::generateVertices(int subdivisionIterations, std::vector<BveModel::Vertex>& inVertices, std::vector<BveModel::Vertex>& outVertices)
+	std::unique_ptr<BveModel> createCubeModel(BveDevice& device, glm::vec3 offset) {
+		std::vector<BveModel::Vertex> vertices{
+
+			// left face (white)
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+			// right face (yellow)
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+			// top face (orange, remember y axis points down)
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+			// bottom face (red)
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+			// nose face (blue)
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+			// tail face (green)
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+
+		};
+		for (auto& v : vertices) {
+			v.position += offset;
+		}
+		return std::make_unique<BveModel>(device, vertices);
+	}
+
+	void subdivideTriangle(int subdivisionIterations, std::vector<BveModel::Vertex>& inVertices, std::vector<BveModel::Vertex>& outVertices)
 	{
 		if (subdivisionIterations == 0) {
 			outVertices.insert(std::end(outVertices), std::begin(inVertices), std::end(inVertices));
@@ -56,109 +107,56 @@ namespace bve {
 		std::vector<BveModel::Vertex> newVertices{};
 		std::vector<std::vector<BveModel::Vertex>> newShapes{};
 		for (int i = 0; i < inVertices.size() - 1; i++) {
-			glm::vec2 position = { (inVertices[i].position + inVertices[i + 1].position) * 0.5f };
+			glm::vec3 position = { (inVertices[i].position + inVertices[i + 1].position) * 0.5f };
 			glm::vec3 color = { (inVertices[i].color + inVertices[i + 1].color) * 0.5f };
 			newVertices.push_back({ position, color });
 		}
 
-		glm::vec2 position = { (inVertices.back().position + inVertices[0].position) * 0.5f };
+		glm::vec3 position = { (inVertices.back().position + inVertices[0].position) * 0.5f };
 		glm::vec3 color = { (inVertices.back().color + inVertices[0].color) * 0.5f };
 		newVertices.push_back({ position, color });
 
 		for (int i = 0; i < inVertices.size() - 1; i++) {
 			newShapes.push_back({ newVertices[i], inVertices[i + 1], newVertices[i + 1] });
-			generateVertices(subdivisionIterations - 1, newShapes[i], outVertices);
+			subdivideTriangle(subdivisionIterations - 1, newShapes[i], outVertices);
 		}
 		newShapes.push_back({ newVertices.back(), inVertices[0], newVertices[0] });
-		generateVertices(subdivisionIterations - 1, newShapes.back(), outVertices);
+		subdivideTriangle(subdivisionIterations - 1, newShapes.back(), outVertices);
+	}
+
+	std::unique_ptr<BveModel> createTriangleModel(BveDevice& device, glm::vec3 offset, int subdivisions) {
+		std::vector<BveModel::Vertex> basicVertices{
+			{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
+		};
+
+		std::vector<BveModel::Vertex> modifiedVertices{};
+		subdivideTriangle(subdivisions, basicVertices, modifiedVertices);
+
+		for (auto& v : modifiedVertices) {
+			v.position += offset;
+		}
+		return std::make_unique<BveModel>(device, modifiedVertices);
 	}
 
 	void BasicApp::loadEntities()
 	{
-		Entity firstTriangle = entityManager.createEntity();
-		std::vector<BveModel::Vertex> vertices{
-			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-		};
-		std::vector<BveModel::Vertex> complexVertices{};
-		generateVertices(6, vertices, complexVertices);
+		std::shared_ptr<BveModel> cubeModel = createCubeModel(bveDevice, { 0.f, 0.f, 0.f });
+		std::shared_ptr<BveModel> triangleModel = createTriangleModel(bveDevice, { 0.f, 0.f, 0.f }, 3);
 
-		RenderComponent renderCmp1(make_shared<BveModel>(bveDevice, complexVertices), { .1f, .8f, .1f });
-		entityManager.addComponent<RenderComponent>(firstTriangle, renderCmp1);
+		Entity cube = entityManager.createEntity();
+		Entity triangle = entityManager.createEntity();
 
-		Transform2dComponent transformCmp1{};
-		entityManager.addComponent<Transform2dComponent>(firstTriangle, transformCmp1);
+		RenderComponent cubeRenderCmp{ cubeModel, glm::vec3{} };
+		RenderComponent triangleRenderCmp{ triangleModel, glm::vec3{} };
 
-		Entity secondTriangle = entityManager.createEntity();
-		std::vector<BveModel::Vertex> vertices2{
-			{{0.5f, 0.5f}, {0.6f, 1.0f, 0.0f}},
-			{{0.0f, 0.85f}, {0.0f, 0.6f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 0.0f, 0.6f}}
-		};
-		std::vector<BveModel::Vertex> complexVertices2{};
-		generateVertices(3, vertices2, complexVertices2);
+		TransformComponent cubeTransformCmp{ { .0f, .0f, .5f }, {.5f, .5f, .5f}};
+		TransformComponent triangleTransformCmp{ {.0f, .0f, .0f}, {.5f, .5f, .5f}};
 
-		RenderComponent renderCmp2(make_shared<BveModel>(bveDevice, complexVertices2), { .8f, .1f, .1f });
-		entityManager.addComponent<RenderComponent>(secondTriangle, renderCmp2);
-
-		Transform2dComponent transformCmp2{};
-		entityManager.addComponent<Transform2dComponent>(secondTriangle, transformCmp2);
-	}
-
-	void BasicApp::createPipelineLayout()
-	{
-		VkPushConstantRange pushConstantRange;
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(SimplePushConstantData);
-
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-		if (vkCreatePipelineLayout(bveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create pipeline info");
-		}
-	}
-
-	void BasicApp::createPipeline()
-	{
-		assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
-
-		PipelineConfigInfo pipelineConfig{};
-		BvePipeline::defaultPipelineConfigInfo(pipelineConfig);
-		pipelineConfig.renderPass = renderer.getSwapChainRenderPass();
-		pipelineConfig.pipelineLayout = pipelineLayout;
-		bvePipeline = std::make_unique<BvePipeline>(
-			bveDevice,
-			"shaders/simple_shader.vert.spv",
-			"shaders/simple_shader.frag.spv",
-			pipelineConfig);
-	}
-
-	void BasicApp::render(VkCommandBuffer commandBuffer)
-	{
-		bvePipeline->bind(commandBuffer);
-
-		EntityComponentView<RenderComponent> view = entityManager.view<RenderComponent>();
-		for (const auto&& [entity, modelComponent] : view) {
-			SimplePushConstantData push{};
-
-			push.color = modelComponent.color;
-			if (entityManager.hasComponent<Transform2dComponent>(entity)) {
-				Transform2dComponent& transformComponent = entityManager.getComponent<Transform2dComponent>(entity);
-				push.offset = transformComponent.translation;
-				push.transform = transformComponent.mat2();
-
-				transformComponent.rotation = glm::mod(transformComponent.rotation + 0.001f, glm::two_pi<float>());
-			}
-
-			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
-			modelComponent.model->bind(commandBuffer);
-			modelComponent.model->draw(commandBuffer);
-		}
+		entityManager.addComponent<RenderComponent>(cube, cubeRenderCmp);
+		//entityManager.addComponent<RenderComponent>(triangle, triangleRenderCmp);
+		entityManager.addComponent<TransformComponent>(cube, cubeTransformCmp);
+		//entityManager.addComponent<TransformComponent>(triangle, triangleTransformCmp);
 	}
 }

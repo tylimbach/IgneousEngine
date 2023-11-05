@@ -22,7 +22,7 @@ add_executable(
     "src/entity_manager.h" 
     "src/entity_component_registry.h"
     "src/components/components.h"
-    "src/entity_component_view.h" "src/renderer.h" "src/renderer.cpp")
+    "src/entity_component_view.h" "src/renderer.h" "src/renderer.cpp" "src/render_system.h" "src/render_system.cpp")
 
 # Include the directories
 target_include_directories(
