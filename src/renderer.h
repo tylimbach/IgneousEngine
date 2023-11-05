@@ -29,6 +29,7 @@ namespace bve {
 		VkRenderPass getSwapChainRenderPass() const { return bveSwapChain->getRenderPass(); }
 		VkCommandBuffer getCurrentCommandBuffer() const { return commandBuffers[currentFrameIndex]; }
 		int getFrameIndex() const { return currentFrameIndex; }
+		uint32_t getImageCount() const { return bveSwapChain->imageCount(); }
 
 		VkCommandBuffer beginFrame();
 		void endFrame();

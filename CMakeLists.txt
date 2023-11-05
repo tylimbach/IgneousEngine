@@ -22,8 +22,18 @@ add_executable(
     "src/entity_manager.h" 
     "src/entity_component_registry.h"
     "src/components/components.h"
-    "src/entity_component_view.h" "src/renderer.h" "src/renderer.cpp" "src/render_system.h" "src/render_system.cpp" "src/camera.h" "src/camera.cpp")
-
+    "src/entity_component_view.h" 
+    "src/renderer.h" "src/renderer.cpp"
+    "src/render_system.h" "src/render_system.cpp"
+    "src/camera.h" "src/camera.cpp"
+    "vendor/imgui-1.89.9/imgui.cpp" "vendor/imgui-1.89.9/imgui_demo.cpp" 
+    "vendor/imgui-1.89.9/imgui_draw.cpp" "vendor/imgui-1.89.9/imgui_tables.cpp" 
+    "vendor/imgui-1.89.9/imgui.h" "vendor/imgui-1.89.9/imgui_internal.h"
+    "vendor/imgui-1.89.9/imstb_rectpack.h" "vendor/imgui-1.89.9/imstb_textedit.h"
+    "vendor/imgui-1.89.9/imgui_widgets.cpp" "vendor/imgui-1.89.9/imstb_truetype.h"
+    "vendor/imgui-1.89.9/imgui_impl_glfw.cpp" "vendor/imgui-1.89.9/imgui_impl_glfw.h" 
+    "vendor/imgui-1.89.9/imgui_impl_vulkan.cpp" "vendor/imgui-1.89.9/imgui_impl_vulkan.h"
+ "src/bve_imgui.h" "src/bve_imgui.cpp")
 # Include the directories
 target_include_directories(
     ${PROJECT_NAME}
@@ -31,6 +41,7 @@ target_include_directories(
     ${Vulkan_INCLUDE_DIRS}
     ${GLFW3_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
+    "${PROJECT_SOURCE_DIR}/vendor/imgui-1.89.9"
 )
 
 # Link the libraries to your project

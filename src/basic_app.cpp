@@ -5,6 +5,11 @@
 #include "components/components.h"
 #include "render_system.h"
 
+#include "bve_imgui.h"
+
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_vulkan.h>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -23,6 +28,8 @@ namespace bve {
 
 	void BasicApp::run()
 	{
+		BveImgui bveImgui{ bveWindow, bveDevice, renderer.getSwapChainRenderPass(), renderer.getImageCount() };
+
 		RenderSystem renderSystem{ bveDevice, renderer.getSwapChainRenderPass(), entityManager };
 		Camera camera{};
 		camera.setViewDirection(glm::vec3{ 0.f }, glm::vec3{ 0.5f, 0.f, 1.f });
@@ -35,8 +42,24 @@ namespace bve {
 			camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
 
 			if (VkCommandBuffer commandBuffer = renderer.beginFrame()) {
+				bveImgui.newFrame();
+
+				// render game objects first, so they will be rendered in the background. This
+				// is the best we can do for now.
+				// Once we cover offscreen rendering, we can render the scene to a image/texture rather than
+				// directly to the swap chain. This texture of the scene can then be rendered to an imgui
+				// subwindow
 				renderer.beginSwapChainRenderPass(commandBuffer);
 				renderSystem.render(commandBuffer, camera);
+
+				// example code telling imgui what windows to render, and their contents
+				// this can be replaced with whatever code/classes you set up configuring your
+				// desired engine UI
+				bveImgui.runExample();
+
+				// as last step in render pass, record the imgui draw commands
+				bveImgui.render(commandBuffer);
+
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 			}
