@@ -50,7 +50,7 @@ namespace bve {
 
 	struct RenderComponent
 	{
-		std::shared_ptr<BveModel> model;
+		std::unique_ptr<BveModel> model;
 		glm::vec3 color{ .0f, .0f, .0f};
 	};
 }

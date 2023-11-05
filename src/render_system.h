@@ -2,6 +2,7 @@
 
 #include "bve_pipeline.h"
 #include "bve_model.h"
+#include "camera.h"
 
 #include <memory>
 #include <vector>
@@ -19,7 +20,7 @@ namespace bve {
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
 
-		void render(VkCommandBuffer commandBuffer);
+		void render(VkCommandBuffer commandBuffer, const Camera& camera);
 
 	private:
 		void createPipelineLayout();

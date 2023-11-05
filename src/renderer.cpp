@@ -32,15 +32,13 @@ namespace bve {
 			bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent);
 		} else {
 			std::shared_ptr<BveSwapChain> oldSwapChain = std::move(bveSwapChain);
+			bveSwapChain = nullptr;
 			bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent, oldSwapChain);
 
 			if (!oldSwapChain->compareSwapFormats(*bveSwapChain)) {
 				throw std::runtime_error("Swap chain image or depth format has changed!");
 			}
 		}
-
-		bveSwapChain = nullptr;
-		bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent);
 	}
 
 	void Renderer::createCommandBuffers()
@@ -111,10 +109,8 @@ namespace bve {
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || bveWindow.wasWindowResized()) {
 			bveWindow.resetWindowResizedFlag();
 			recreateSwapChain();
-		}
-
-		if (result != VK_SUCCESS) {
-			throw std::runtime_error("Failed to present swap chain image");
+		} else if (result != VK_SUCCESS) {
+			throw std::runtime_error("failed to present swap chain image!");
 		}
 
 		isFrameStarted = false;
@@ -125,13 +121,6 @@ namespace bve {
 	{
 		assert(isFrameStarted && "Cannot call beginSwapChainRenderPass while frame is not in progress");
 		assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on another frame's command buffer");
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to begin recording command buffer!");
-		}
 
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

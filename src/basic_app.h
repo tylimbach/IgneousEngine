@@ -4,9 +4,6 @@
 #include "renderer.h"
 #include "bve_model.h"
 
-#include <memory>
-#include <vector>
-
 #include "entity_manager.h"
 
 namespace bve {

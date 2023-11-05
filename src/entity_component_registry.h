@@ -23,13 +23,13 @@ namespace bve
 			return instance;
 		}
 
-		static void insert(uint32_t id, const T& value) {
+		static void insert(uint32_t id, T value) {
 			if (id >= lookup.size()) {
 				lookup.resize(id + 1, UINT32_MAX); // Using UINT32_MAX as a sentinel for non-existent entries
 			}
 
 			lookup[id] = static_cast<uint32_t>(components.size());
-			components.push_back(value);
+			components.push_back(std::move(value));
 			entities.push_back(id);
 		}
 

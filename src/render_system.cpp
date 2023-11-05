@@ -6,7 +6,6 @@
 #include <glm/gtc/constants.hpp>
 
 #include <stdexcept>
-#include <array>
 #include <thread>
 
 #include "entity_manager.h"
@@ -61,7 +60,7 @@ namespace bve {
 			pipelineConfig);
 	}
 
-	void RenderSystem::render(VkCommandBuffer commandBuffer)
+	void RenderSystem::render(VkCommandBuffer commandBuffer, const Camera& camera)
 	{
 		bvePipeline->bind(commandBuffer);
 
@@ -72,9 +71,10 @@ namespace bve {
 			push.color = modelComponent.color;
 			if (entityManager.hasComponent<TransformComponent>(entity)) {
 				auto& transformComponent = entityManager.getComponent<TransformComponent>(entity);
-				push.transform = transformComponent.mat4();
+				push.transform = camera.getProjection() * transformComponent.mat4();
 
-				transformComponent.rotation.y = glm::mod(transformComponent.rotation.y + 0.001f, glm::two_pi<float>());
+				transformComponent.rotation.y = glm::mod(transformComponent.rotation.y + 0.0005f, glm::two_pi<float>());
+				transformComponent.rotation.x = glm::mod(transformComponent.rotation.x + 0.0001f, glm::two_pi<float>());
 			}
 
 			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);

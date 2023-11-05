@@ -25,7 +25,7 @@ namespace bve {
 		Renderer& operator=(const Renderer&) = delete;
 
 		bool isFrameInProgress() const { return isFrameStarted; }
-
+		float getAspectRatio() const { return bveSwapChain->extentAspectRatio(); }
 		VkRenderPass getSwapChainRenderPass() const { return bveSwapChain->getRenderPass(); }
 		VkCommandBuffer getCurrentCommandBuffer() const { return commandBuffers[currentFrameIndex]; }
 		int getFrameIndex() const { return currentFrameIndex; }

@@ -1,5 +1,10 @@
 #include "basic_app.h"
 
+#include "camera.h"
+#include "entity_manager.h"
+#include "components/components.h"
+#include "render_system.h"
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -7,11 +12,6 @@
 
 #include <stdexcept>
 #include <array>
-#include <thread>
-
-#include "entity_manager.h"
-#include "components/components.h"
-#include "render_system.h"
 
 namespace bve {
 
@@ -24,13 +24,18 @@ namespace bve {
 	void BasicApp::run()
 	{
 		RenderSystem renderSystem{ bveDevice, renderer.getSwapChainRenderPass(), entityManager };
+		Camera camera{};
 
 		while (!bveWindow.shouldClose()) {
 			glfwPollEvents();
 
+			float aspect = renderer.getAspectRatio();
+			//camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+			camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+
 			if (VkCommandBuffer commandBuffer = renderer.beginFrame()) {
 				renderer.beginSwapChainRenderPass(commandBuffer);
-				renderSystem.render(commandBuffer);
+				renderSystem.render(commandBuffer, camera);
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
 			}
@@ -142,19 +147,19 @@ namespace bve {
 
 	void BasicApp::loadEntities()
 	{
-		std::shared_ptr<BveModel> cubeModel = createCubeModel(bveDevice, { 0.f, 0.f, 0.f });
-		std::shared_ptr<BveModel> triangleModel = createTriangleModel(bveDevice, { 0.f, 0.f, 0.f }, 3);
+		std::unique_ptr<BveModel> cubeModel = createCubeModel(bveDevice, {0.f, 0.f, 0.f});
+		//std::shared_ptr<BveModel> triangleModel = createTriangleModel(bveDevice, { 0.f, 0.f, 0.f }, 3);
 
 		Entity cube = entityManager.createEntity();
-		Entity triangle = entityManager.createEntity();
+		//Entity triangle = entityManager.createEntity();
 
-		RenderComponent cubeRenderCmp{ cubeModel, glm::vec3{} };
-		RenderComponent triangleRenderCmp{ triangleModel, glm::vec3{} };
+		RenderComponent cubeRenderCmp{ std::move(cubeModel), glm::vec3{} };
+		//RenderComponent triangleRenderCmp{ triangleModel, glm::vec3{} };
 
-		TransformComponent cubeTransformCmp{ { .0f, .0f, .5f }, {.5f, .5f, .5f}};
-		TransformComponent triangleTransformCmp{ {.0f, .0f, .0f}, {.5f, .5f, .5f}};
+		TransformComponent cubeTransformCmp{ { .0f, .0f, 2.5f }, {.5f, .5f, .5f}};
+		//TransformComponent triangleTransformCmp{ {.0f, .0f, .0f}, {.5f, .5f, .5f}};
 
-		entityManager.addComponent<RenderComponent>(cube, cubeRenderCmp);
+		entityManager.addComponent<RenderComponent>(cube, std::move(cubeRenderCmp));
 		//entityManager.addComponent<RenderComponent>(triangle, triangleRenderCmp);
 		entityManager.addComponent<TransformComponent>(cube, cubeTransformCmp);
 		//entityManager.addComponent<TransformComponent>(triangle, triangleTransformCmp);

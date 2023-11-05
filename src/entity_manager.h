@@ -34,9 +34,9 @@ namespace bve
 		}
 
 		template <typename T>
-		void addComponent(Entity entity, T& component)
+		void addComponent(Entity entity, T component)
 		{
-			EntityComponentRegistry<T>::insert(entity, component);
+			EntityComponentRegistry<T>::insert(entity, std::move(component));
 		}
 
 		template <typename T>
