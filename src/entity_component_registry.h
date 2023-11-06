@@ -7,11 +7,11 @@
 
 namespace bve
 {
-    template <typename T>
+    template <typename Component>
     class EntityComponentRegistry {
 	private:
 		static inline std::vector<uint32_t> lookup;
-		static inline std::vector<T> components;
+		static inline std::vector<Component> components;
 		static inline std::vector<uint32_t> entities;
 
 	public:
@@ -23,7 +23,7 @@ namespace bve
 			return instance;
 		}
 
-		static void insert(uint32_t id, T value) {
+		static void insert(uint32_t id, Component value) {
 			if (id >= lookup.size()) {
 				lookup.resize(id + 1, UINT32_MAX); // Using UINT32_MAX as a sentinel for non-existent entries
 			}
@@ -57,7 +57,7 @@ namespace bve
 			return id < lookup.size() && lookup[id] != UINT32_MAX;
 		}
 
-		static T& getComponent(uint32_t id) {
+		static Component& getComponent(uint32_t id) {
 			return components[lookup[id]];
 		}
 
@@ -65,8 +65,8 @@ namespace bve
 			return entities[index];
 		}
 
-		static std::span<T> viewComponents() {
-			return std::span<T>(components.data(), components.size());
+		static std::span<Component> viewComponents() {
+			return std::span<Component>(components.data(), components.size());
 		}
 
 		static std::span<uint32_t> viewEntities() {

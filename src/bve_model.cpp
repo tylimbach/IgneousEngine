@@ -30,7 +30,6 @@ namespace bve {
 		vkUnmapMemory(bveDevice.device(), vertexBufferMemory);
 	}
 
-
 	void BveModel::bind(VkCommandBuffer commandBuffer) const {
 		VkBuffer buffers[] = { vertexBuffer };
 		VkDeviceSize offsets[] = { 0 };

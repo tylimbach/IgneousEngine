@@ -27,41 +27,50 @@ namespace bve
 			return newEntity;
 		}
 
-		template <typename T>
-		bool hasComponent(Entity entity)
+		template <typename Component>
+		bool has(Entity entity)
 		{
-			return EntityComponentRegistry<T>::contains(entity);
+			return EntityComponentRegistry<Component>::contains(entity);
 		}
 
-		template <typename T>
-		void addComponent(Entity entity, T component)
-		{
-			EntityComponentRegistry<T>::insert(entity, std::move(component));
+		template <typename... Components>
+		void add(Entity entity, Components&&... components) {
+			(EntityComponentRegistry<std::decay_t<Components>>::insert(entity, std::forward<Components>(components)), ...);
 		}
 
-		template <typename T>
-		T& getComponent(Entity entity)
+
+		template <typename Component, typename... ComponentsLeft>
+		void add(Entity entity)
 		{
-			return EntityComponentRegistry<T>::getComponent(entity);
+			EntityComponentRegistry<Component>::insert(entity, Component{});
+			if constexpr (sizeof...(ComponentsLeft) > 0) {
+				add<ComponentsLeft...>(entity);
+			}
 		}
 
-		template <typename... T>
-		std::tuple<T...> getComponents(Entity entity)
+		template <typename Component>
+		Component& get(Entity entity)
 		{
-			return { this->getComponent<T>(entity)... };
+			return EntityComponentRegistry<Component>::getComponent(entity);
 		}
 
-		template<typename T>
-		EntityComponentView<T> view() {
-			std::span<uint32_t> entities = EntityComponentRegistry<T>::viewEntities();
-			std::span<T> components = EntityComponentRegistry<T>::viewComponents();
-			return EntityComponentView<T>(entities, components);
+		//template <typename... Component>
+		//std::tuple<Component...> get(Entity entity)
+		//{
+		//	return { this->get<Component>(entity)... };
+		//}
+
+		template<typename Component>
+		EntityComponentView<Component> view() {
+			std::span<uint32_t> entities = EntityComponentRegistry<Component>::viewEntities();
+			std::span<Component> components = EntityComponentRegistry<Component>::viewComponents();
+			return EntityComponentView<Component>(entities, components);
 		}
 
-		template <typename T>
-		bool removeComponent(Entity entity)
+		template <typename Component>
+		bool remove(Entity entity)
 		{
-			return EntityComponentRegistry<T>::erase(entity);
+			return EntityComponentRegistry<Component>::erase(entity);
 		}
 
 	private:

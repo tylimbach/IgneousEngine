@@ -60,23 +60,21 @@ namespace bve {
 			pipelineConfig);
 	}
 
-	void RenderSystem::render(VkCommandBuffer commandBuffer, const Camera& camera)
+	void RenderSystem::render(VkCommandBuffer commandBuffer, Entity activeCamera)
 	{
 		bvePipeline->bind(commandBuffer);
 
-		glm::mat4 projectionView = camera.getProjection() * camera.getView();
+		auto&& cameraComp = entityManager.get<CameraComponent>(activeCamera);
+		const glm::mat4 projectionView = cameraComp.projectionMatrix * cameraComp.viewMatrix;
 
 		EntityComponentView<RenderComponent> view = entityManager.view<RenderComponent>();
 		for (const auto&& [entity, modelComponent] : view) {
 			SimplePushConstantData push{};
 
 			push.color = modelComponent.color;
-			if (entityManager.hasComponent<TransformComponent>(entity)) {
-				auto& transformComponent = entityManager.getComponent<TransformComponent>(entity);
+			if (entityManager.has<TransformComponent>(entity)) {
+				auto& transformComponent = entityManager.get<TransformComponent>(entity);
 				push.transform = projectionView * transformComponent.mat4();
-
-				transformComponent.rotation.y = glm::mod(transformComponent.rotation.y + 0.0005f, glm::two_pi<float>());
-				transformComponent.rotation.x = glm::mod(transformComponent.rotation.x + 0.0001f, glm::two_pi<float>());
 			}
 
 			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);

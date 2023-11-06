@@ -1,9 +1,11 @@
 #include "basic_app.h"
 
-#include "camera.h"
+#include "input_controller.h"
 #include "entity_manager.h"
 #include "components/components.h"
 #include "render_system.h"
+#include "camera_system.h"
+#include "movement_system.h"
 
 #include "bve_imgui.h"
 
@@ -17,6 +19,7 @@
 
 #include <stdexcept>
 #include <array>
+#include <chrono>
 
 namespace bve {
 
@@ -28,37 +31,40 @@ namespace bve {
 
 	void BasicApp::run()
 	{
-		BveImgui bveImgui{ bveWindow, bveDevice, renderer.getSwapChainRenderPass(), renderer.getImageCount() };
+		BveImgui bveImGui{ bveWindow, bveDevice, renderer.getSwapChainRenderPass(), renderer.getImageCount() };
+
+		InputController inputController{ entityManager };
 
 		RenderSystem renderSystem{ bveDevice, renderer.getSwapChainRenderPass(), entityManager };
-		Camera camera{};
-		camera.setViewDirection(glm::vec3{ 0.f }, glm::vec3{ 0.5f, 0.f, 1.f });
+		CameraSystem cameraSystem{ entityManager };
+		MovementSystem movementSystem{ entityManager };
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		while (!bveWindow.shouldClose()) {
 			glfwPollEvents();
 
-			float aspect = renderer.getAspectRatio();
-			//camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-			camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+			auto newTime = std::chrono::high_resolution_clock::now();
+			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			currentTime = newTime;
+
+			inputController.update(bveWindow.getGLFWWindow(), 0);
+
+			const float aspectRatio = renderer.getAspectRatio();
+
+			movementSystem.update(frameTime);
+			cameraSystem.update(aspectRatio);
+
+			Entity camera = cameraSystem.getActiveCamera();
 
 			if (VkCommandBuffer commandBuffer = renderer.beginFrame()) {
-				bveImgui.newFrame();
-
-				// render game objects first, so they will be rendered in the background. This
-				// is the best we can do for now.
-				// Once we cover offscreen rendering, we can render the scene to a image/texture rather than
-				// directly to the swap chain. This texture of the scene can then be rendered to an imgui
-				// subwindow
+				bveImGui.newFrame();
+				
 				renderer.beginSwapChainRenderPass(commandBuffer);
 				renderSystem.render(commandBuffer, camera);
 
-				// example code telling imgui what windows to render, and their contents
-				// this can be replaced with whatever code/classes you set up configuring your
-				// desired engine UI
-				bveImgui.runExample();
-
-				// as last step in render pass, record the imgui draw commands
-				bveImgui.render(commandBuffer);
+				bveImGui.runExample();
+				bveImGui.render(commandBuffer);
 
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
@@ -171,21 +177,19 @@ namespace bve {
 
 	void BasicApp::loadEntities()
 	{
+		const Entity cube = entityManager.createEntity();
 		std::unique_ptr<BveModel> cubeModel = createCubeModel(bveDevice, {0.f, 0.f, 0.f});
+
+		entityManager.add<RenderComponent>(cube, { std::move(cubeModel), glm::vec3{} });
+		entityManager.add<TransformComponent>(cube, { { .0f, .0f, 25.f }, {.5f, .5f, .5f} });
+		entityManager.add<MoveComponent, RotateComponent, PlayerTag>(cube);
+
 		//std::shared_ptr<BveModel> triangleModel = createTriangleModel(bveDevice, { 0.f, 0.f, 0.f }, 3);
-
-		Entity cube = entityManager.createEntity();
 		//Entity triangle = entityManager.createEntity();
-
-		RenderComponent cubeRenderCmp{ std::move(cubeModel), glm::vec3{} };
 		//RenderComponent triangleRenderCmp{ triangleModel, glm::vec3{} };
-
-		TransformComponent cubeTransformCmp{ { .0f, .0f, 2.5f }, {.5f, .5f, .5f}};
 		//TransformComponent triangleTransformCmp{ {.0f, .0f, .0f}, {.5f, .5f, .5f}};
+		//entityManager.add<RenderComponent>(triangle, triangleRenderCmp);
+		//entityManager.add<TransformComponent>(triangle, triangleTransformCmp);
 
-		entityManager.addComponent<RenderComponent>(cube, std::move(cubeRenderCmp));
-		//entityManager.addComponent<RenderComponent>(triangle, triangleRenderCmp);
-		entityManager.addComponent<TransformComponent>(cube, cubeTransformCmp);
-		//entityManager.addComponent<TransformComponent>(triangle, triangleTransformCmp);
 	}
 }

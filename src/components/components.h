@@ -48,9 +48,41 @@ namespace bve {
         }
 	};
 
+    struct MoveComponent
+    {
+        glm::vec3 velocity{ .0f, .0f, .0f };
+        glm::vec3 acceleration{ .0f, .0f, .0f };
+    };
+
+    struct RotateComponent
+    {
+        glm::vec3 velocity{ .0f, .0f, .0f };
+        glm::vec3 acceleration{ .0f, .0f, .0f };
+    };
+
+    enum class CameraMode {
+        PERSPECTIVE,
+        ORTHOGRAPHIC,
+    };
+
+    struct CameraComponent
+    {
+        CameraMode mode{CameraMode::PERSPECTIVE};
+
+        float fovy{ 50.f }, aspect{ 16.f / 9.f };
+        float left{ -1.f }, right{ 1.f }, top{ 1.f }, bottom{-1.f};
+
+        float near{ 0.1f }, far{1000.f};
+    	glm::mat4 projectionMatrix{ 1.f };
+        glm::mat4 viewMatrix{ 1.f };
+    };
+
 	struct RenderComponent
 	{
 		std::unique_ptr<BveModel> model;
 		glm::vec3 color{ .0f, .0f, .0f};
 	};
+
+    struct PlayerTag{};
+    struct ActiveCameraTag{};
 }

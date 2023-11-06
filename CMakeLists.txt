@@ -33,7 +33,11 @@ add_executable(
     "vendor/imgui-1.89.9/imgui_widgets.cpp" "vendor/imgui-1.89.9/imstb_truetype.h"
     "vendor/imgui-1.89.9/imgui_impl_glfw.cpp" "vendor/imgui-1.89.9/imgui_impl_glfw.h" 
     "vendor/imgui-1.89.9/imgui_impl_vulkan.cpp" "vendor/imgui-1.89.9/imgui_impl_vulkan.h"
- "src/bve_imgui.h" "src/bve_imgui.cpp")
+    "src/bve_imgui.h" "src/bve_imgui.cpp" 
+    "src/movement_system.h" "src/movement_system.cpp"
+    "src/camera_system.h" "src/camera_system.cpp"
+    "src/input_controller.cpp"  "src/input_controller.h"
+)
 # Include the directories
 target_include_directories(
     ${PROJECT_NAME}
@@ -49,7 +53,7 @@ target_link_libraries(
     ${PROJECT_NAME}
     ${Vulkan_LIBRARIES}
     ${GLFW3_LIBRARY}
-    ${GLM_LIBRARIES}
+    # ${GLM_LIBRARIES}
 )
 
 if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "AMD64")

@@ -12,7 +12,6 @@
 namespace bve {
 
 	class RenderSystem {
-
 	public:
 		RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager);
 		~RenderSystem();
@@ -20,7 +19,7 @@ namespace bve {
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
 
-		void render(VkCommandBuffer commandBuffer, const Camera& camera);
+		void render(VkCommandBuffer commandBuffer, Entity activeCamera);
 
 	private:
 		void createPipelineLayout();
