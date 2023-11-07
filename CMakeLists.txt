@@ -37,7 +37,7 @@ add_executable(
     "src/movement_system.h" "src/movement_system.cpp"
     "src/camera_system.h" "src/camera_system.cpp"
     "src/input_controller.cpp"  "src/input_controller.h"
-)
+    "vendor/tinyobjloader/tiny_obj_loader.h" "src/bve_utils.h")
 # Include the directories
 target_include_directories(
     ${PROJECT_NAME}
@@ -46,6 +46,7 @@ target_include_directories(
     ${GLFW3_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
     "${PROJECT_SOURCE_DIR}/vendor/imgui-1.89.9"
+    "${PROJECT_SOURCE_DIR}/vendor/tinyobjloaderh"
 )
 
 # Link the libraries to your project
@@ -90,6 +91,11 @@ add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${PROJECT_BINARY_DIR}/shaders"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders"
+
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/models/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/models"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/models"
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_PATH})

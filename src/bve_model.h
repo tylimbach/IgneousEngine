@@ -6,6 +6,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include <memory>
 #include <vector>
 
 namespace bve {
@@ -17,15 +18,23 @@ namespace bve {
 		{
 			glm::vec3 position;
 			glm::vec3 color;
+			glm::vec3 normal{};
+			glm::vec2 uv{};
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
+
+			bool operator==(const Vertex& other) const {
+				return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
+			}
 		};
 
 		struct Builder
 		{
 			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
+
+			void loadModel(const std::string& filepath);
 		};
 
 		BveModel(BveDevice &device, const Builder& builder);
@@ -34,7 +43,9 @@ namespace bve {
 		BveModel(const BveModel&) = delete;
 		BveModel operator=(const BveModel&) = delete;
 		BveModel(BveModel&& other) = default;
-		BveModel& operator=(BveModel&& other) = default;
+		BveModel& operator=(BveModel&& other) = delete;
+
+		static std::unique_ptr<BveModel> createModelFromFile(BveDevice& device, const std::string& filepath);
 
 		void bind(VkCommandBuffer commandBuffer) const;
 		void draw(VkCommandBuffer commandBuffer) const;

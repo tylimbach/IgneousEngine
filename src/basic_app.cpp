@@ -74,55 +74,6 @@ namespace bve {
 		vkDeviceWaitIdle(bveDevice.device());
 	}
 
-	std::unique_ptr<BveModel> createCubeModel(BveDevice& device, glm::vec3 offset) {
-		BveModel::Builder modelBuilder{};
-		modelBuilder.vertices = {
-			// left face (white)
-			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-			{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-			{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-			{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-
-			// right face (yellow)
-			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-			{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-			{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-			{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-
-			// top face (orange, remember y axis points down)
-			{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-			{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-			{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-			{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-
-			// bottom face (red)
-			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-			{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-			{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-			{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-
-			// nose face (blue)
-			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-			{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-			{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-			{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-
-			// tail face (green)
-			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-			{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-			{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-			{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-		};
-		for (auto& v : modelBuilder.vertices) {
-			v.position += offset;
-		}
-
-		modelBuilder.indices = { 0,  1,  2,  0,  3,  1,  4,  5,  6,  4,  7,  5,  8,  9,  10, 8,  11, 9,
-								12, 13, 14, 12, 15, 13, 16, 17, 18, 16, 19, 17, 20, 21, 22, 20, 23, 21 };
-
-		return std::make_unique<BveModel>(device, modelBuilder);
-	}
-
 	void subdivideTriangle(int subdivisionIterations, std::vector<BveModel::Vertex>& inVertices, std::vector<BveModel::Vertex>& outVertices)
 	{
 		if (subdivisionIterations == 0) {
@@ -171,12 +122,12 @@ namespace bve {
 
 	void BasicApp::loadEntities()
 	{
-		const Entity cube = entityManager.createEntity();
-		std::unique_ptr<BveModel> cubeModel = createCubeModel(bveDevice, {0.f, 0.f, 0.f});
+		const Entity coloredCube = entityManager.createEntity();
+		std::unique_ptr<BveModel> coloredCubeModel = BveModel::createModelFromFile(bveDevice, "models/flat_vase.obj");
 
-		entityManager.add<RenderComponent>(cube, { std::move(cubeModel), glm::vec3{} });
-		entityManager.add<TransformComponent>(cube, { { .0f, .0f, 25.f }, {.5f, .5f, .5f} });
-		entityManager.add<MoveComponent, RotateComponent, PlayerTag>(cube);
+		entityManager.add<RenderComponent>(coloredCube, { std::move(coloredCubeModel), glm::vec3{} });
+		entityManager.add<TransformComponent>(coloredCube, { { .0f, .0f, 25.f }, {.5f, .5f, .5f} });
+		entityManager.add<MoveComponent, RotateComponent, PlayerTag>(coloredCube);
 
 		//std::shared_ptr<BveModel> triangleModel = createTriangleModel(bveDevice, { 0.f, 0.f, 0.f }, 3);
 		//Entity triangle = entityManager.createEntity();
