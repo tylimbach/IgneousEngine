@@ -10,25 +10,28 @@
 
 #include "bve_swap_chain.h"
 #include "entity_manager.h"
+#include "vulkan_descriptors.h"
 #include "components/components.h"
 
 namespace bve {
 
 	struct SimplePushConstantData {
-		glm::mat4 transform{ 1.f };
+		glm::mat4 modelMatrix{ 1.f };
 		glm::mat4 normalMatrix{ 1.f };
 	};
 
 	struct GlobalUbo
 	{
-		glm::mat4 projectionView{ 1.f };
-		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.f, -3.f, -1.f });
+		alignas(16) glm::mat4 projectionView{ 1.f };
+		alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.f, -3.f, -1.f });
 	};
 
-	RenderSystem::RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager) : bveDevice(device), entityManager(entityManager) {
+	RenderSystem::RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager)
+		: bveDevice(device), entityManager(entityManager) {
+		createUboBuffers();
+		createDescriptorSets();
 		createPipelineLayout();
 		createPipeline(renderPass);
-		createUboBuffers();
 	}
 
 	RenderSystem::~RenderSystem() {
@@ -42,10 +45,12 @@ namespace bve {
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(SimplePushConstantData);
 
+		const std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ globalSetLayout->getDescriptorSetLayout() };
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 		if (vkCreatePipelineLayout(bveDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -83,6 +88,26 @@ namespace bve {
 		}
 	}
 
+	void RenderSystem::createDescriptorSets()
+	{
+		globalPool = VulkanDescriptorPool::Builder(bveDevice)
+			.setMaxSets(BveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, BveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
+
+		globalSetLayout = VulkanDescriptorSetLayout::Builder(bveDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.build();
+
+		globalDescriptorSets = std::vector<VkDescriptorSet>(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriptorSets.size(); i++) {
+			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+			VulkanDescriptorWriter(*globalSetLayout, *globalPool)
+				.writeBuffer(0, &bufferInfo)
+				.build(globalDescriptorSets[i]);
+		}
+	}
+
 
 	void RenderSystem::render(FrameInfo& frameInfo) const
 	{
@@ -93,9 +118,10 @@ namespace bve {
 
 		GlobalUbo ubo{};
 		ubo.projectionView = projectionView;
-
 		uboBuffers[frameInfo.frameIndex]->writeToBuffer(&ubo);
 		uboBuffers[frameInfo.frameIndex]->flush();
+
+		vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &globalDescriptorSets[frameInfo.frameIndex], 0, nullptr);
 
 		EntityComponentView<RenderComponent> view = entityManager.view<RenderComponent>();
 		for (const auto&& [entity, modelComponent] : view) {
@@ -103,8 +129,7 @@ namespace bve {
 
 			if (entityManager.has<TransformComponent>(entity)) {
 				auto& transformComponent = entityManager.get<TransformComponent>(entity);
-				glm::mat4 modelMatrix = transformComponent.mat4();
-				push.transform = projectionView * modelMatrix;
+				push.modelMatrix = transformComponent.mat4();
 				push.normalMatrix = transformComponent.normalMatrix();
 			}
 

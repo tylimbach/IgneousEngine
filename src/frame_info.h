@@ -12,5 +12,6 @@ namespace bve
 		float frameTime;
 		VkCommandBuffer commandBuffer;
 		Entity camera;
+		VkDescriptorSet globalDescriptorSet;
 	};
 }
