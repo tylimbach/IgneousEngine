@@ -2,7 +2,7 @@
 
 #include "bve_pipeline.h"
 #include "bve_model.h"
-#include "camera.h"
+#include "frame_info.h"
 
 #include <memory>
 #include <vector>
@@ -19,11 +19,12 @@ namespace bve {
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
 
-		void render(VkCommandBuffer commandBuffer, Entity activeCamera);
+		void render(FrameInfo& frameInfo) const;
 
 	private:
 		void createPipelineLayout();
 		void createPipeline(VkRenderPass renderPass);
+		void createUboBuffers();
 
 		BveDevice& bveDevice;
 
@@ -31,5 +32,6 @@ namespace bve {
 		VkPipelineLayout pipelineLayout;
 
 		EntityManager& entityManager;
+		std::vector<std::unique_ptr<VulkanBuffer>> uboBuffers;
 	};
 }

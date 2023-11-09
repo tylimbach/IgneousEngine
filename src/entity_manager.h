@@ -55,7 +55,7 @@ namespace bve
 		}
 
 		//template <typename... Component>
-		//std::tuple<Component...> get(Entity entity)
+		//std::tuple<Component&...> get(Entity entity)
 		//{
 		//	return { this->get<Component>(entity)... };
 		//}

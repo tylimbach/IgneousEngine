@@ -6,6 +6,7 @@
 #include "render_system.h"
 #include "camera_system.h"
 #include "movement_system.h"
+#include "vulkan_buffer.h"
 
 #include "bve_imgui.h"
 
@@ -22,7 +23,6 @@
 #include <chrono>
 
 namespace bve {
-
 	BasicApp::BasicApp() {
 		loadEntities();
 	}
@@ -31,7 +31,7 @@ namespace bve {
 
 	void BasicApp::run()
 	{
-		BveImgui bveImGui{ bveWindow, bveDevice, renderer.getSwapChainRenderPass(), renderer.getImageCount() };
+		BveImgui gui{ bveWindow, bveDevice, renderer.getSwapChainRenderPass(), renderer.getImageCount() };
 
 		InputController inputController{ entityManager };
 
@@ -39,35 +39,37 @@ namespace bve {
 		CameraSystem cameraSystem{ entityManager };
 		MovementSystem movementSystem{ entityManager };
 
+		float aspectRatio = renderer.getAspectRatio();
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		while (!bveWindow.shouldClose()) {
 			glfwPollEvents();
 
 			auto newTime = std::chrono::high_resolution_clock::now();
-			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			const float frameDt = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
 			inputController.update(bveWindow.getGLFWWindow(), 0);
-
-			const float aspectRatio = renderer.getAspectRatio();
-
-			movementSystem.update(frameTime);
+			movementSystem.update(frameDt);
 			cameraSystem.update(aspectRatio);
 
-			Entity camera = cameraSystem.getActiveCamera();
+			const Entity camera = cameraSystem.getActiveCamera();
 
-			if (VkCommandBuffer commandBuffer = renderer.beginFrame()) {
-				bveImGui.newFrame();
+			if (const VkCommandBuffer commandBuffer = renderer.beginFrame()) {
+				FrameInfo frameInfo{ renderer.getFrameIndex(), frameDt, commandBuffer, camera };
+
+				gui.newFrame();
 				
 				renderer.beginSwapChainRenderPass(commandBuffer);
-				renderSystem.render(commandBuffer, camera);
+				renderSystem.render(frameInfo);
 
-				bveImGui.runExample();
-				bveImGui.render(commandBuffer);
+				gui.run();
+				gui.render(commandBuffer);
 
 				renderer.endSwapChainRenderPass(commandBuffer);
 				renderer.endFrame();
+			} else {
+				aspectRatio = renderer.getAspectRatio();
 			}
 		}
 
@@ -122,19 +124,20 @@ namespace bve {
 
 	void BasicApp::loadEntities()
 	{
-		const Entity coloredCube = entityManager.createEntity();
-		std::unique_ptr<BveModel> coloredCubeModel = BveModel::createModelFromFile(bveDevice, "models/flat_vase.obj");
+		const Entity modelEntity = entityManager.createEntity();
+		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(bveDevice, "models/alien.obj");
 
-		entityManager.add<RenderComponent>(coloredCube, { std::move(coloredCubeModel), glm::vec3{} });
-		entityManager.add<TransformComponent>(coloredCube, { { .0f, .0f, 25.f }, {.5f, .5f, .5f} });
-		entityManager.add<MoveComponent, RotateComponent, PlayerTag>(coloredCube);
+		entityManager.add<RenderComponent>(modelEntity, { std::move(model), glm::vec3{} });
+		entityManager.add<TransformComponent>(modelEntity, { { .0f, .5f, 2.5f } });
+		entityManager.add<MoveComponent, RotateComponent, PlayerTag>(modelEntity);
 
-		//std::shared_ptr<BveModel> triangleModel = createTriangleModel(bveDevice, { 0.f, 0.f, 0.f }, 3);
-		//Entity triangle = entityManager.createEntity();
-		//RenderComponent triangleRenderCmp{ triangleModel, glm::vec3{} };
-		//TransformComponent triangleTransformCmp{ {.0f, .0f, .0f}, {.5f, .5f, .5f}};
-		//entityManager.add<RenderComponent>(triangle, triangleRenderCmp);
-		//entityManager.add<TransformComponent>(triangle, triangleTransformCmp);
-
+		int cubes = 5;
+		for (int i = 1; i < cubes + 1; i++) {
+			const Entity cubeEntity = entityManager.createEntity();
+			std::unique_ptr<BveModel> cube = BveModel::createModelFromFile(bveDevice, "models/colored_cube.obj");
+			entityManager.add<RenderComponent>(cubeEntity, { std::move(cube), glm::vec3{} });
+			entityManager.add<TransformComponent>(cubeEntity, { { .2f * i, .2f * i, 25.f * i }, { 0.5f, 0.5f, 0.5f }, {0.5 + 0.2 * i, 0.5 - 0.15 * i, 0.5 + 0.6 * i} });
+			entityManager.add<MoveComponent, RotateComponent, PlayerTag>(cubeEntity);
+		}
 	}
 }

@@ -37,7 +37,8 @@ add_executable(
     "src/movement_system.h" "src/movement_system.cpp"
     "src/camera_system.h" "src/camera_system.cpp"
     "src/input_controller.cpp"  "src/input_controller.h"
-    "vendor/tinyobjloader/tiny_obj_loader.h" "src/bve_utils.h")
+    "vendor/tinyobjloader/tiny_obj_loader.h" "src/bve_utils.h" "src/vulkan_buffer.cpp"
+    "src/vulkan_buffer.h" "src/frame_info.h" "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp")
 # Include the directories
 target_include_directories(
     ${PROJECT_NAME}

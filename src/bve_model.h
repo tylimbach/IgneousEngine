@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bve_device.h"
+#include "vulkan_buffer.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -56,13 +57,11 @@ namespace bve {
 
 		BveDevice& bveDevice;
 
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
+		std::unique_ptr<VulkanBuffer> vertexBuffer;
 		uint32_t vertexCount;
 
 		bool hasIndexBuffer = false;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
+		std::unique_ptr<VulkanBuffer> indexBuffer;
 		uint32_t indexCount;
 	};
 }

@@ -8,19 +8,27 @@
 #include <stdexcept>
 #include <thread>
 
+#include "bve_swap_chain.h"
 #include "entity_manager.h"
 #include "components/components.h"
 
 namespace bve {
 
 	struct SimplePushConstantData {
-		glm::mat4 transform{ 1.0f };
-		alignas(16) glm::vec3 color;
+		glm::mat4 transform{ 1.f };
+		glm::mat4 normalMatrix{ 1.f };
+	};
+
+	struct GlobalUbo
+	{
+		glm::mat4 projectionView{ 1.f };
+		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.f, -3.f, -1.f });
 	};
 
 	RenderSystem::RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager) : bveDevice(device), entityManager(entityManager) {
 		createPipelineLayout();
 		createPipeline(renderPass);
+		createUboBuffers();
 	}
 
 	RenderSystem::~RenderSystem() {
@@ -60,26 +68,49 @@ namespace bve {
 			pipelineConfig);
 	}
 
-	void RenderSystem::render(VkCommandBuffer commandBuffer, Entity activeCamera)
+	void RenderSystem::createUboBuffers()
 	{
-		bvePipeline->bind(commandBuffer);
+		uboBuffers = std::vector<std::unique_ptr<VulkanBuffer>>(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (auto& uboBuffer : uboBuffers) {
+			uboBuffer = std::make_unique<VulkanBuffer>(
+				bveDevice,
+				sizeof(GlobalUbo),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				bveDevice.properties.limits.minUniformBufferOffsetAlignment);
+			uboBuffer->map();
+		}
+	}
 
-		auto&& cameraComp = entityManager.get<CameraComponent>(activeCamera);
+
+	void RenderSystem::render(FrameInfo& frameInfo) const
+	{
+		bvePipeline->bind(frameInfo.commandBuffer);
+
+		auto&& cameraComp = entityManager.get<CameraComponent>(frameInfo.camera);
 		const glm::mat4 projectionView = cameraComp.projectionMatrix * cameraComp.viewMatrix;
+
+		GlobalUbo ubo{};
+		ubo.projectionView = projectionView;
+
+		uboBuffers[frameInfo.frameIndex]->writeToBuffer(&ubo);
+		uboBuffers[frameInfo.frameIndex]->flush();
 
 		EntityComponentView<RenderComponent> view = entityManager.view<RenderComponent>();
 		for (const auto&& [entity, modelComponent] : view) {
 			SimplePushConstantData push{};
 
-			push.color = modelComponent.color;
 			if (entityManager.has<TransformComponent>(entity)) {
 				auto& transformComponent = entityManager.get<TransformComponent>(entity);
-				push.transform = projectionView * transformComponent.mat4();
+				glm::mat4 modelMatrix = transformComponent.mat4();
+				push.transform = projectionView * modelMatrix;
+				push.normalMatrix = transformComponent.normalMatrix();
 			}
 
-			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
-			modelComponent.model->bind(commandBuffer);
-			modelComponent.model->draw(commandBuffer);
+			vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
+			modelComponent.model->bind(frameInfo.commandBuffer);
+			modelComponent.model->draw(frameInfo.commandBuffer);
 		}
 	}
 }
