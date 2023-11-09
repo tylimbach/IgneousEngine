@@ -4,9 +4,9 @@
 
 #include <vulkan/vulkan.h>
 
-namespace bve 
+namespace bve
 {
-	struct FrameInfo 
+	struct FrameInfo
 	{
 		int frameIndex;
 		float frameTime;

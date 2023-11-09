@@ -14,15 +14,16 @@ namespace bve
 {
 	using Entity = uint32_t;
 
-	class EntityManager {
+	class EntityManager
+	{
 	public:
-		EntityManager() : counter(0) {}
+		EntityManager() : counter_(0) {}
 		~EntityManager() = default;
 
 		Entity createEntity()
 		{
-			Entity newEntity = counter.fetch_add(1);
-			entities.insert(newEntity);
+			Entity newEntity = counter_.fetch_add(1);
+			entities_.insert(newEntity);
 
 			return newEntity;
 		}
@@ -34,7 +35,8 @@ namespace bve
 		}
 
 		template <typename... Components>
-		void add(Entity entity, Components&&... components) {
+		void add(Entity entity, Components&&... components)
+		{
 			(EntityComponentRegistry<std::decay_t<Components>>::insert(entity, std::forward<Components>(components)), ...);
 		}
 
@@ -60,8 +62,9 @@ namespace bve
 		//	return { this->get<Component>(entity)... };
 		//}
 
-		template<typename Component>
-		EntityComponentView<Component> view() {
+		template <typename Component>
+		EntityComponentView<Component> view()
+		{
 			std::span<uint32_t> entities = EntityComponentRegistry<Component>::viewEntities();
 			std::span<Component> components = EntityComponentRegistry<Component>::viewComponents();
 			return EntityComponentView<Component>(entities, components);
@@ -74,7 +77,7 @@ namespace bve
 		}
 
 	private:
-		std::atomic<uint32_t> counter = 0;
-		std::unordered_set<Entity> entities;
+		std::atomic<uint32_t> counter_ = 0;
+		std::unordered_set<Entity> entities_;
 	};
 }

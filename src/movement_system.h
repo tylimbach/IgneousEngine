@@ -2,7 +2,7 @@
 
 #include "entity_manager.h"
 
-namespace bve 
+namespace bve
 {
 	class MovementSystem
 	{
@@ -13,6 +13,6 @@ namespace bve
 		void update(float dt);
 
 	private:
-		EntityManager& entityManager;
+		EntityManager& entityManager_;
 	};
 }

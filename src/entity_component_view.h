@@ -5,67 +5,80 @@
 #include <span>
 #include <cassert>
 
-namespace bve {
-	template<typename T>
-	class EntityComponentView {
-	private:
-		std::span<uint32_t> entitySpan;
-		std::span<T> componentSpan;
-
+namespace bve
+{
+	template <typename T>
+	class EntityComponentView
+	{
 	public:
 		EntityComponentView(std::span<uint32_t> eSpan, std::span<T> cSpan)
-			: entitySpan(eSpan), componentSpan(cSpan) {
-			assert(entitySpan.size() == componentSpan.size() && "Entities & component spans have different lengths");
+			: entitySpan_(eSpan), componentSpan_(cSpan)
+		{
+			assert(entitySpan_.size() == componentSpan_.size() && "Entities & component spans have different lengths");
 		}
 
-		class Iterator {
-		private:
-			typename std::span<uint32_t>::iterator entityIter;
-			typename std::span<T>::iterator componentIter;
-
+		class Iterator
+		{
 		public:
-			Iterator(typename std::span<uint32_t>::iterator eIt, typename std::span<T>::iterator cIt)
-				: entityIter(eIt), componentIter(cIt) {}
+			Iterator(std::span<uint32_t>::iterator eIt, typename std::span<T>::iterator cIt)
+				: entityIter_(eIt), componentIter_(cIt) {}
 
-			std::tuple<uint32_t&, T&> operator*() {
-				return { *entityIter, *componentIter };
+			std::tuple<uint32_t&, T&> operator*()
+			{
+				return {*entityIter_, *componentIter_};
 			}
 
-			Iterator& operator++() {
-				++entityIter;
-				++componentIter;
+			Iterator& operator++()
+			{
+				++entityIter_;
+				++componentIter_;
 				return *this;
 			}
 
-			Iterator operator++(int) {  
+			Iterator operator++(int)
+			{
 				Iterator tmp = *this;
-				++(*this); 
+				++(*this);
 				return tmp;
 			}
 
-			bool operator==(const Iterator& other) const {
-				return entityIter == other.entityIter;
+			bool operator==(const Iterator& other) const
+			{
+				return entityIter_ == other.entityIter_;
 			}
 
-			bool operator!=(const Iterator& other) const {
+			bool operator!=(const Iterator& other) const
+			{
 				return !(*this == other);
 			}
+
+		private:
+			std::span<uint32_t>::iterator entityIter_;
+			typename std::span<T>::iterator componentIter_;
 		};
 
-		Iterator begin() {
-			return Iterator(entitySpan.begin(), componentSpan.begin());
+		Iterator begin()
+		{
+			return Iterator(entitySpan_.begin(), componentSpan_.begin());
 		}
 
-		Iterator end() {
-			return Iterator(entitySpan.end(), componentSpan.end());
+		Iterator end()
+		{
+			return Iterator(entitySpan_.end(), componentSpan_.end());
 		}
 
-		const Iterator begin() const {
-			return Iterator(entitySpan.begin(), componentSpan.begin());
+		const Iterator begin() const
+		{
+			return Iterator(entitySpan_.begin(), componentSpan_.begin());
 		}
 
-		const Iterator end() const {
-			return Iterator(entitySpan.end(), componentSpan.end());
+		const Iterator end() const
+		{
+			return Iterator(entitySpan_.end(), componentSpan_.end());
 		}
+
+	private:
+		std::span<uint32_t> entitySpan_;
+		std::span<T> componentSpan_;
 	};
 }

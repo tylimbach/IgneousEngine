@@ -7,16 +7,16 @@
 #include "entity_manager.h"
 #include "components/components.h"
 
-namespace bve 
+namespace bve
 {
-	class CameraSystem 
+	class CameraSystem
 	{
 	public:
 		CameraSystem(EntityManager& entityManager, Entity camera = UINT32_MAX);
 		~CameraSystem() = default;
 
 		void update(float aspectRatio);
-		Entity getActiveCamera() const { return activeCamera; }
+		Entity getActiveCamera() const { return activeCamera_; }
 
 		void setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
 		void setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up);
@@ -27,7 +27,7 @@ namespace bve
 		static void setView(CameraComponent& camera, TransformComponent& transform);
 		static void directionAndUpToEulerYXZ(const glm::vec3& direction, const glm::vec3& up, glm::vec3& rotation);
 
-		EntityManager& entityManager;
-		Entity activeCamera;
+		EntityManager& entityManager_;
+		Entity activeCamera_;
 	};
 }

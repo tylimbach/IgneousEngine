@@ -9,9 +9,10 @@
 #include <memory>
 #include <vector>
 
-namespace bve {
-
-	class RenderSystem {
+namespace bve
+{
+	class RenderSystem
+	{
 	public:
 		RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager);
 		~RenderSystem();
@@ -27,16 +28,16 @@ namespace bve {
 		void createUboBuffers();
 		void createDescriptorSets();
 
-		BveDevice& bveDevice;
+		BveDevice& bveDevice_;
 
-		std::unique_ptr<BvePipeline> bvePipeline;
-		VkPipelineLayout pipelineLayout;
+		std::unique_ptr<BvePipeline> bvePipeline_;
+		VkPipelineLayout pipelineLayout_;
 
-		std::vector<std::unique_ptr<VulkanBuffer>> uboBuffers;
-		std::unique_ptr<VulkanDescriptorPool> globalPool{};
-		std::vector<VkDescriptorSet> globalDescriptorSets;
-		std::unique_ptr<VulkanDescriptorSetLayout> globalSetLayout;
+		std::vector<std::unique_ptr<VulkanBuffer>> uboBuffers_;
+		std::unique_ptr<VulkanDescriptorPool> globalPool_{};
+		std::vector<VkDescriptorSet> globalDescriptorSets_;
+		std::unique_ptr<VulkanDescriptorSetLayout> globalSetLayout_;
 
-		EntityManager& entityManager;
+		EntityManager& entityManager_;
 	};
 }

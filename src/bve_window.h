@@ -5,10 +5,10 @@
 
 #include <string>
 
-namespace bve {
-
-	class BveWindow {
-
+namespace bve
+{
+	class BveWindow
+	{
 	public:
 		BveWindow(int width, int height, std::string name);
 		~BveWindow();
@@ -16,25 +16,24 @@ namespace bve {
 		BveWindow(const BveWindow&) = delete;
 		BveWindow& operator=(const BveWindow&) = delete;
 
-		bool shouldClose() { return glfwWindowShouldClose(window); }
-		VkExtent2D getExtent() { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; }
-		bool wasWindowResized() { return frameBufferResized; }
-		void resetWindowResizedFlag() { frameBufferResized = false; }
-		
+		bool shouldClose() { return glfwWindowShouldClose(window_); }
+		VkExtent2D getExtent() { return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)}; }
+		bool wasWindowResized() { return frameBufferResized_; }
+		void resetWindowResizedFlag() { frameBufferResized_ = false; }
+
 		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
-		GLFWwindow* getGLFWWindow() { return window; }
+		GLFWwindow* getGLFWWindow() { return window_; }
 
 	private:
 		static void frameBufferResizeCallback(GLFWwindow* window, int width, int height);
 		void initWindow();
 
-		int width;
-		int height;
-		bool frameBufferResized = false;
+		int width_;
+		int height_;
+		bool frameBufferResized_ = false;
 
-		std::string windowName;
-		GLFWwindow* window;
+		std::string windowName_;
+		GLFWwindow* window_;
 	};
-
 }

@@ -10,10 +10,10 @@
 
 #include "entity_manager.h"
 
-namespace bve {
-
-	class Renderer {
-
+namespace bve
+{
+	class Renderer
+	{
 	public:
 		static constexpr int WIDTH = 1600;
 		static constexpr int HEIGHT = 1200;
@@ -24,12 +24,12 @@ namespace bve {
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
 
-		bool isFrameInProgress() const { return isFrameStarted; }
-		float getAspectRatio() const { return bveSwapChain->extentAspectRatio(); }
-		VkRenderPass getSwapChainRenderPass() const { return bveSwapChain->getRenderPass(); }
-		VkCommandBuffer getCurrentCommandBuffer() const { return commandBuffers[currentFrameIndex]; }
-		int getFrameIndex() const { return currentFrameIndex; }
-		uint32_t getImageCount() const { return bveSwapChain->imageCount(); }
+		bool isFrameInProgress() const { return isFrameStarted_; }
+		float getAspectRatio() const { return bveSwapChain_->extentAspectRatio(); }
+		VkRenderPass getSwapChainRenderPass() const { return bveSwapChain_->getRenderPass(); }
+		VkCommandBuffer getCurrentCommandBuffer() const { return commandBuffers_[currentFrameIndex_]; }
+		int getFrameIndex() const { return currentFrameIndex_; }
+		uint32_t getImageCount() const { return bveSwapChain_->imageCount(); }
 
 		VkCommandBuffer beginFrame();
 		void endFrame();
@@ -41,13 +41,13 @@ namespace bve {
 		void freeCommandBuffers();
 		void recreateSwapChain();
 
-		BveWindow& bveWindow;
-		BveDevice& bveDevice;
-		std::unique_ptr<BveSwapChain> bveSwapChain;
-		std::vector<VkCommandBuffer> commandBuffers;
+		BveWindow& bveWindow_;
+		BveDevice& bveDevice_;
+		std::unique_ptr<BveSwapChain> bveSwapChain_;
+		std::vector<VkCommandBuffer> commandBuffers_;
 
-		uint32_t currentImageIndex;
-		int currentFrameIndex;
-		bool isFrameStarted;
+		uint32_t currentImageIndex_;
+		int currentFrameIndex_;
+		bool isFrameStarted_;
 	};
 }

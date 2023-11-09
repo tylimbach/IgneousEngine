@@ -7,35 +7,37 @@
 #include "entity_manager.h"
 #include "components/components.h"
 
-namespace bve {
-
-	Renderer::Renderer(BveWindow& window, BveDevice& device) :bveWindow(window), bveDevice(device), currentFrameIndex(0), isFrameStarted(false) {
+namespace bve
+{
+	Renderer::Renderer(BveWindow& window, BveDevice& device) : bveWindow_(window), bveDevice_(device), currentFrameIndex_(0), isFrameStarted_(false)
+	{
 		recreateSwapChain();
 		createCommandBuffers();
 	}
 
-	Renderer::~Renderer() {
+	Renderer::~Renderer()
+	{
 		freeCommandBuffers();
 	}
 
 	void Renderer::recreateSwapChain()
 	{
-		VkExtent2D extent = bveWindow.getExtent();
+		VkExtent2D extent = bveWindow_.getExtent();
 		while (extent.width == 0 || extent.height == 0) {
-			extent = bveWindow.getExtent();
+			extent = bveWindow_.getExtent();
 			glfwWaitEvents();
 		}
 
-		vkDeviceWaitIdle(bveDevice.device());
+		vkDeviceWaitIdle(bveDevice_.device());
 
-		if (bveSwapChain == nullptr) {
-			bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent);
+		if (bveSwapChain_ == nullptr) {
+			bveSwapChain_ = std::make_unique<BveSwapChain>(bveDevice_, extent);
 		} else {
-			std::shared_ptr<BveSwapChain> oldSwapChain = std::move(bveSwapChain);
-			bveSwapChain = nullptr;
-			bveSwapChain = std::make_unique<BveSwapChain>(bveDevice, extent, oldSwapChain);
+			std::shared_ptr<BveSwapChain> oldSwapChain = std::move(bveSwapChain_);
+			bveSwapChain_ = nullptr;
+			bveSwapChain_ = std::make_unique<BveSwapChain>(bveDevice_, extent, oldSwapChain);
 
-			if (!oldSwapChain->compareSwapFormats(*bveSwapChain)) {
+			if (!oldSwapChain->compareSwapFormats(*bveSwapChain_)) {
 				throw std::runtime_error("Swap chain image or depth format has changed!");
 			}
 		}
@@ -43,15 +45,15 @@ namespace bve {
 
 	void Renderer::createCommandBuffers()
 	{
-		commandBuffers.resize(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		commandBuffers_.resize(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = bveDevice.getCommandPool();
-		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+		allocInfo.commandPool = bveDevice_.getCommandPool();
+		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers_.size());
 
-		if (vkAllocateCommandBuffers(bveDevice.device(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+		if (vkAllocateCommandBuffers(bveDevice_.device(), &allocInfo, commandBuffers_.data()) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to allocate command buffers");
 		}
 	}
@@ -59,18 +61,18 @@ namespace bve {
 	void Renderer::freeCommandBuffers()
 	{
 		vkFreeCommandBuffers(
-			bveDevice.device(),
-			bveDevice.getCommandPool(),
-			static_cast<uint32_t>(commandBuffers.size()),
-			commandBuffers.data());
-		commandBuffers.clear();
+			bveDevice_.device(),
+			bveDevice_.getCommandPool(),
+			commandBuffers_.size(),
+			commandBuffers_.data());
+		commandBuffers_.clear();
 	}
 
 	VkCommandBuffer Renderer::beginFrame()
 	{
-		assert(!isFrameStarted && "Cannot call beginFrame while frame already in progress");
+		assert(!isFrameStarted_ && "Cannot call beginFrame while frame already in progress");
 
-		VkResult result = bveSwapChain->acquireNextImage(&currentImageIndex);
+		VkResult result = bveSwapChain_->acquireNextImage(&currentImageIndex_);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			recreateSwapChain();
@@ -81,7 +83,7 @@ namespace bve {
 			throw std::runtime_error("Failed to acquire swap chain image");
 		}
 
-		isFrameStarted = true;
+		isFrameStarted_ = true;
 
 		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
 
@@ -97,42 +99,42 @@ namespace bve {
 
 	void Renderer::endFrame()
 	{
-		assert(isFrameStarted && "Cannot call endFrame while frame is not in progress");
+		assert(isFrameStarted_ && "Cannot call endFrame while frame is not in progress");
 
 		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to record command buffer");
 		}
 
-		VkResult result = bveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+		VkResult result = bveSwapChain_->submitCommandBuffers(&commandBuffer, &currentImageIndex_);
 
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || bveWindow.wasWindowResized()) {
-			bveWindow.resetWindowResizedFlag();
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || bveWindow_.wasWindowResized()) {
+			bveWindow_.resetWindowResizedFlag();
 			recreateSwapChain();
 		} else if (result != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chain image!");
 		}
 
-		isFrameStarted = false;
-		currentFrameIndex = (currentFrameIndex + 1) % BveSwapChain::MAX_FRAMES_IN_FLIGHT;
+		isFrameStarted_ = false;
+		currentFrameIndex_ = (currentFrameIndex_ + 1) % BveSwapChain::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	{
-		assert(isFrameStarted && "Cannot call beginSwapChainRenderPass while frame is not in progress");
+		assert(isFrameStarted_ && "Cannot call beginSwapChainRenderPass while frame is not in progress");
 		assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on another frame's command buffer");
 
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = bveSwapChain->getRenderPass();
-		renderPassInfo.framebuffer = bveSwapChain->getFrameBuffer(currentImageIndex);
+		renderPassInfo.renderPass = bveSwapChain_->getRenderPass();
+		renderPassInfo.framebuffer = bveSwapChain_->getFrameBuffer(currentImageIndex_);
 
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = bveSwapChain->getSwapChainExtent();
+		renderPassInfo.renderArea.offset = {0, 0};
+		renderPassInfo.renderArea.extent = bveSwapChain_->getSwapChainExtent();
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { {0.01f, 0.01f, 0.01f, 1.0f} };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		clearValues[0].color = {{0.01f, 0.01f, 0.01f, 1.0f}};
+		clearValues[1].depthStencil = {1.0f, 0};
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
@@ -141,18 +143,18 @@ namespace bve {
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(bveSwapChain->getSwapChainExtent().width);
-		viewport.height = static_cast<float>(bveSwapChain->getSwapChainExtent().height);
+		viewport.width = static_cast<float>(bveSwapChain_->getSwapChainExtent().width);
+		viewport.height = static_cast<float>(bveSwapChain_->getSwapChainExtent().height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		VkRect2D scissor{ {0, 0}, bveSwapChain->getSwapChainExtent() };
+		VkRect2D scissor{{0, 0}, bveSwapChain_->getSwapChainExtent()};
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	}
 
 	void Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	{
-		assert(isFrameStarted && "Cannot call endSwapChainRenderPass while frame is not in progress");
+		assert(isFrameStarted_ && "Cannot call endSwapChainRenderPass while frame is not in progress");
 		assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on another frame's command buffer");
 
 		vkCmdEndRenderPass(commandBuffer);

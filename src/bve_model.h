@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
-namespace bve {
-
+namespace bve
+{
 	class BveModel
 	{
 	public:
@@ -25,7 +25,8 @@ namespace bve {
 			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
 
-			bool operator==(const Vertex& other) const {
+			bool operator==(const Vertex& other) const
+			{
 				return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
 			}
 		};
@@ -38,7 +39,7 @@ namespace bve {
 			void loadModel(const std::string& filepath);
 		};
 
-		BveModel(BveDevice &device, const Builder& builder);
+		BveModel(BveDevice& device, const Builder& builder);
 		~BveModel();
 
 		BveModel(const BveModel&) = delete;
@@ -55,13 +56,13 @@ namespace bve {
 		void createVertexBuffer(const std::vector<Vertex>& vertices);
 		void createIndexBuffer(const std::vector<uint32_t>& indices);
 
-		BveDevice& bveDevice;
+		BveDevice& bveDevice_;
 
-		std::unique_ptr<VulkanBuffer> vertexBuffer;
-		uint32_t vertexCount;
+		std::unique_ptr<VulkanBuffer> vertexBuffer_;
+		uint32_t vertexCount_;
 
-		bool hasIndexBuffer = false;
-		std::unique_ptr<VulkanBuffer> indexBuffer;
-		uint32_t indexCount;
+		bool hasIndexBuffer_ = false;
+		std::unique_ptr<VulkanBuffer> indexBuffer_;
+		uint32_t indexCount_;
 	};
 }

@@ -7,78 +7,89 @@
 
 namespace bve
 {
-    template <typename Component>
-    class EntityComponentRegistry {
-	private:
-		static inline std::vector<uint32_t> lookup;
-		static inline std::vector<Component> components;
-		static inline std::vector<uint32_t> entities;
-
+	template <typename Component>
+	class EntityComponentRegistry
+	{
 	public:
-		EntityComponentRegistry(EntityComponentRegistry const&) = delete;
-		void operator=(EntityComponentRegistry const&) = delete;
+		EntityComponentRegistry(const EntityComponentRegistry&) = delete;
+		void operator=(const EntityComponentRegistry&) = delete;
 
-		static EntityComponentRegistry& instance() {
+		static EntityComponentRegistry& instance()
+		{
 			static EntityComponentRegistry instance;
 			return instance;
 		}
 
-		static void insert(uint32_t id, Component value) {
-			if (id >= lookup.size()) {
-				lookup.resize(id + 1, UINT32_MAX); // Using UINT32_MAX as a sentinel for non-existent entries
+		static void insert(uint32_t id, Component value)
+		{
+			if (id >= lookup_.size()) {
+				lookup_.resize(id + 1, UINT32_MAX); // Using UINT32_MAX as a sentinel for non-existent entries
 			}
 
-			lookup[id] = static_cast<uint32_t>(components.size());
-			components.push_back(std::move(value));
-			entities.push_back(id);
+			lookup_[id] = static_cast<uint32_t>(components_.size());
+			components_.push_back(std::move(value));
+			entities_.push_back(id);
 		}
 
-		static bool erase(uint32_t id) {
-			if (id < lookup.size() && lookup[id] != UINT32_MAX) {
-				uint32_t last = static_cast<uint32_t>(components.size()) - 1;
-				uint32_t idx_to_remove = lookup[id];
+		static bool erase(uint32_t id)
+		{
+			if (id < lookup_.size() && lookup_[id] != UINT32_MAX) {
+				uint32_t last = static_cast<uint32_t>(components_.size()) - 1;
+				uint32_t idx_to_remove = lookup_[id];
 
 				if (idx_to_remove != last) {
-					std::swap(components[idx_to_remove], components[last]);
-					std::swap(entities[idx_to_remove], entities[last]);
-					lookup[entities[idx_to_remove]] = idx_to_remove;
+					std::swap(components_[idx_to_remove], components_[last]);
+					std::swap(entities_[idx_to_remove], entities_[last]);
+					lookup_[entities_[idx_to_remove]] = idx_to_remove;
 				}
 
-				components.pop_back();
-				entities.pop_back();
-				lookup[id] = UINT32_MAX;
+				components_.pop_back();
+				entities_.pop_back();
+				lookup_[id] = UINT32_MAX;
 				return true;
 			}
 
 			return false;
 		}
 
-		static bool contains(uint32_t id) {
-			return id < lookup.size() && lookup[id] != UINT32_MAX;
+		static bool contains(uint32_t id)
+		{
+			return id < lookup_.size() && lookup_[id] != UINT32_MAX;
 		}
 
-		static Component& getComponent(uint32_t id) {
-			return components[lookup[id]];
+		static Component& getComponent(uint32_t id)
+		{
+			return components_[lookup_[id]];
 		}
 
-		static uint32_t getEntity(uint32_t index) {
-			return entities[index];
+		static uint32_t getEntity(uint32_t index)
+		{
+			return entities_[index];
 		}
 
-		static std::span<Component> viewComponents() {
-			return std::span<Component>(components.data(), components.size());
+		static std::span<Component> viewComponents()
+		{
+			return std::span<Component>(components_.data(), components_.size());
 		}
 
-		static std::span<uint32_t> viewEntities() {
-			return std::span(entities.data(), entities.size());
+		static std::span<uint32_t> viewEntities()
+		{
+			return std::span(entities_.data(), entities_.size());
 		}
 
-		static bool empty() noexcept {
-			return components.empty();
+		static bool empty() noexcept
+		{
+			return components_.empty();
 		}
 
-		static size_t size() noexcept {
-			return components.size();
+		static size_t size() noexcept
+		{
+			return components_.size();
 		}
-    };
+
+	private:
+		static inline std::vector<uint32_t> lookup_;
+		static inline std::vector<Component> components_;
+		static inline std::vector<uint32_t> entities_;
+	};
 }

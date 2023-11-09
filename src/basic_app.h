@@ -6,10 +6,10 @@
 
 #include "entity_manager.h"
 
-namespace bve {
-
-	class BasicApp {
-
+namespace bve
+{
+	class BasicApp
+	{
 	public:
 		static constexpr int WIDTH = 1600;
 		static constexpr int HEIGHT = 1200;
@@ -25,10 +25,10 @@ namespace bve {
 	private:
 		void loadEntities();
 
-		BveWindow bveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
-		BveDevice bveDevice{ bveWindow };
-		Renderer renderer{ bveWindow, bveDevice };
+		BveWindow bveWindow_{WIDTH, HEIGHT, "Hello Vulkan!"};
+		BveDevice bveDevice_{bveWindow_};
+		Renderer renderer_{bveWindow_, bveDevice_};
 
-		EntityManager entityManager{};
+		EntityManager entityManager_{};
 	};
 }

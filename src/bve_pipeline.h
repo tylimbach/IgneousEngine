@@ -5,9 +5,10 @@
 #include <vector>
 #include <string>
 
-namespace bve {
-
-	struct PipelineConfigInfo {
+namespace bve
+{
+	struct PipelineConfigInfo
+	{
 		PipelineConfigInfo() = default;
 		PipelineConfigInfo(const PipelineConfigInfo&) = delete;
 		PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
@@ -26,13 +27,14 @@ namespace bve {
 		uint32_t subpass = 0;
 	};
 
-	class BvePipeline {
+	class BvePipeline
+	{
 	public:
-		BvePipeline(BveDevice &device, const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo);
+		BvePipeline(BveDevice& device, const std::string& vertFilePath, const std::string& fragFilePath, const PipelineConfigInfo& configInfo);
 		~BvePipeline();
 
 		BvePipeline(const BvePipeline&) = delete;
-		BvePipeline &operator=(const BvePipeline&) = delete;
+		BvePipeline& operator=(const BvePipeline&) = delete;
 
 		void bind(VkCommandBuffer commandBuffer);
 		static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
@@ -44,9 +46,9 @@ namespace bve {
 
 		void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-		BveDevice& bveDevice;
-		VkPipeline graphicsPipeline;
-		VkShaderModule vertShaderModule;
-		VkShaderModule fragShaderModule;
+		BveDevice& bveDevice_;
+		VkPipeline graphicsPipeline_;
+		VkShaderModule vertShaderModule_;
+		VkShaderModule fragShaderModule_;
 	};
 }
