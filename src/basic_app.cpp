@@ -33,7 +33,7 @@ namespace bve
 
 	void BasicApp::run()
 	{
-		BveImgui gui{bveWindow_, bveDevice_, renderer_.getSwapChainRenderPass(), renderer_.getImageCount()};
+		BveImgui gui{bveWindow_, bveDevice_, renderer_.getSwapChainRenderPass(), renderer_.getImageCount(), entityManager_};
 
 		InputController inputController{entityManager_};
 
@@ -51,7 +51,7 @@ namespace bve
 			const float frameDt = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
-			inputController.update(bveWindow_.getGLFWWindow(), 0);
+			inputController.update(bveWindow_.getGLFWWindow());
 			movementSystem.update(frameDt);
 			cameraSystem.update(aspectRatio);
 
@@ -128,18 +128,20 @@ namespace bve
 	{
 		const Entity modelEntity = entityManager_.createEntity();
 		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(bveDevice_, "models/alien.obj");
+		entityManager_.addComponent<RenderComponent>(modelEntity, {std::move(model), glm::vec3{}});
+		entityManager_.addComponent<TransformComponent>(modelEntity, {{.0f, .5f, 0.0f}});
+		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(modelEntity);
 
-		entityManager_.add<RenderComponent>(modelEntity, {std::move(model), glm::vec3{}});
-		entityManager_.add<TransformComponent>(modelEntity, {{.0f, .5f, 2.5f}});
-		entityManager_.add<MoveComponent, RotateComponent, PlayerTag>(modelEntity);
+		const Entity cubeEntity = entityManager_.createEntity();
+		std::unique_ptr<BveModel> cubeModel = BveModel::createModelFromFile(bveDevice_, "models/colored_cube.obj");
+		entityManager_.addComponent<RenderComponent>(cubeEntity, { std::move(cubeModel), glm::vec3{} });
+		entityManager_.addComponent<TransformComponent>(cubeEntity, { {-2.5f , -2.5f, -0.5f} });
+		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(cubeEntity);
 
-		int cubes = 5;
-		for (float i = 1; i < cubes; i++) {
-			const Entity cubeEntity = entityManager_.createEntity();
-			std::unique_ptr<BveModel> cube = BveModel::createModelFromFile(bveDevice_, "models/colored_cube.obj");
-			entityManager_.add<RenderComponent>(cubeEntity, {std::move(cube), glm::vec3{}});
-			entityManager_.add<TransformComponent>(cubeEntity, {{.2f * i, .2f * i, 25.f * i}, {0.5f, 0.5f, 0.5f}, {0.5 + 0.2 * i, 0.5 - 0.15 * i, 0.5 + 0.6 * i}});
-			entityManager_.add<MoveComponent, RotateComponent, PlayerTag>(cubeEntity);
-		}
+		const Entity floorEntity = entityManager_.createEntity();
+		std::unique_ptr<BveModel> floorModel = BveModel::createModelFromFile(bveDevice_, "models/quad.obj");
+		entityManager_.addComponent<RenderComponent>(floorEntity, { std::move(floorModel), glm::vec3{} });
+		entityManager_.addComponent<TransformComponent>(floorEntity, { {0.5f , 0.5f, 0.f}, {3.f, 1.f, 3.f} });
+		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(floorEntity);
 	}
 }

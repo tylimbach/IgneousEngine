@@ -27,7 +27,7 @@ namespace bve
 			int lookDown = GLFW_KEY_DOWN;
 		};
 
-		void update(GLFWwindow* window, Entity entity);
+		void update(GLFWwindow* window);
 
 		KeyMappings keys{};
 		float moveSpeed{3.f};

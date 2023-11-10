@@ -77,7 +77,6 @@ namespace bve
 			return Iterator(entitySpan_.end(), componentSpan_.end());
 		}
 
-	private:
 		std::span<uint32_t> entitySpan_;
 		std::span<T> componentSpan_;
 	};

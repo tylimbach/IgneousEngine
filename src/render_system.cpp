@@ -23,8 +23,10 @@ namespace bve
 
 	struct GlobalUbo
 	{
-		alignas(16) glm::mat4 projectionView{1.f};
-		alignas(16) glm::vec3 lightDirection = normalize(glm::vec3{1.f, -3.f, -1.f});
+		glm::mat4 projectionView{1.f};
+		glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .2f};
+		glm::vec3 lightPosition{-1.f};
+		alignas(16) glm::vec4 lightColor{1.f};
 	};
 
 	RenderSystem::RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager)
@@ -116,7 +118,7 @@ namespace bve
 	{
 		bvePipeline_->bind(frameInfo.commandBuffer);
 
-		auto&& cameraComp = entityManager_.get<CameraComponent>(frameInfo.camera);
+		auto&& cameraComp = entityManager_.getComponent<CameraComponent>(frameInfo.camera);
 		const glm::mat4 projectionView = cameraComp.projectionMatrix * cameraComp.viewMatrix;
 
 		GlobalUbo ubo{};
@@ -130,8 +132,8 @@ namespace bve
 		for (const auto&& [entity, modelComponent] : view) {
 			SimplePushConstantData push{};
 
-			if (entityManager_.has<TransformComponent>(entity)) {
-				auto& transformComponent = entityManager_.get<TransformComponent>(entity);
+			if (entityManager_.hasComponent<TransformComponent>(entity)) {
+				auto& transformComponent = entityManager_.getComponent<TransformComponent>(entity);
 				push.modelMatrix = transformComponent.mat4();
 				push.normalMatrix = transformComponent.normalMatrix();
 			}

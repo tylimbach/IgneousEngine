@@ -11,6 +11,8 @@
 // std
 #include <stdexcept>
 
+#include "entity_manager.h"
+
 // This whole class is only necessary right now because it needs to manage the descriptor pool
 // because we haven't set one up anywhere else in the application, and we manage the
 // example state, otherwise all the functions could just be static helper functions if you prefered
@@ -26,7 +28,7 @@ namespace bve
 	class BveImgui
 	{
 	public:
-		BveImgui(BveWindow& window, BveDevice& device, VkRenderPass renderPass, uint32_t imageCount);
+		BveImgui(BveWindow& window, BveDevice& device, VkRenderPass renderPass, uint32_t imageCount, EntityManager& entityManager);
 		~BveImgui();
 
 		void newFrame();
@@ -41,6 +43,8 @@ namespace bve
 
 	private:
 		BveDevice& bveDevice_;
+
+		EntityManager& entityManager_;
 
 		// We haven't yet covered descriptor pools in the tutorial series
 		// so I'm just going to create one for just imgui and store it here for now.

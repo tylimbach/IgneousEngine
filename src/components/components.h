@@ -102,10 +102,10 @@ namespace bve
 	{
 		ProjectionMode mode{ProjectionMode::PERSPECTIVE};
 
-		float fovy{50.f}, aspect{16.f / 9.f};
+		float fovyDegrees{1}, aspect{16.f / 9.f};
 		float left{-1.f}, right{1.f}, top{1.f}, bottom{-1.f};
 
-		float near{0.1f}, far{1000.f};
+		float near{0.1f}, far{100.f};
 		glm::mat4 projectionMatrix{1.f};
 		glm::mat4 viewMatrix{1.f};
 	};
@@ -119,4 +119,6 @@ namespace bve
 	struct PlayerTag {};
 
 	struct ActiveCameraTag {};
+
+	struct SelectedTag {};
 }

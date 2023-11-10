@@ -29,29 +29,29 @@ namespace bve
 		}
 
 		template <typename Component>
-		bool has(Entity entity)
+		bool hasComponent(Entity entity)
 		{
 			return EntityComponentRegistry<Component>::contains(entity);
 		}
 
 		template <typename... Components>
-		void add(Entity entity, Components&&... components)
+		void addComponent(Entity entity, Components&&... components)
 		{
 			(EntityComponentRegistry<std::decay_t<Components>>::insert(entity, std::forward<Components>(components)), ...);
 		}
 
 
 		template <typename Component, typename... ComponentsLeft>
-		void add(Entity entity)
+		void addComponent(Entity entity)
 		{
 			EntityComponentRegistry<Component>::insert(entity, Component{});
 			if constexpr (sizeof...(ComponentsLeft) > 0) {
-				add<ComponentsLeft...>(entity);
+				addComponent<ComponentsLeft...>(entity);
 			}
 		}
 
 		template <typename Component>
-		Component& get(Entity entity)
+		Component& getComponent(Entity entity)
 		{
 			return EntityComponentRegistry<Component>::getComponent(entity);
 		}
@@ -65,15 +65,20 @@ namespace bve
 		template <typename Component>
 		EntityComponentView<Component> view()
 		{
-			std::span<uint32_t> entities = EntityComponentRegistry<Component>::viewEntities();
+			std::span<Entity> entities = EntityComponentRegistry<Component>::viewEntities();
 			std::span<Component> components = EntityComponentRegistry<Component>::viewComponents();
 			return EntityComponentView<Component>(entities, components);
 		}
 
 		template <typename Component>
-		bool remove(Entity entity)
+		bool removeComponent(Entity entity)
 		{
 			return EntityComponentRegistry<Component>::erase(entity);
+		}
+
+		std::vector<Entity> getEntities() const
+		{
+			return std::vector (entities_.begin(), entities_.end());
 		}
 
 	private:

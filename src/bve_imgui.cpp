@@ -11,14 +11,16 @@
 // std
 #include <stdexcept>
 
+#include "components/components.h"
+
 namespace bve
 {
 	// ok this just initializes imgui using the provided integration files. So in our case we need to
 	// initialize the vulkan and glfw imgui implementations, since that's what our engine is built
 	// using.
 	BveImgui::BveImgui(
-		BveWindow& window, BveDevice& device, VkRenderPass renderPass, uint32_t imageCount)
-		: bveDevice_{device}
+		BveWindow& window, BveDevice& device, VkRenderPass renderPass, uint32_t imageCount, EntityManager& entityManager)
+		: bveDevice_{ device }, entityManager_{ entityManager }
 	{
 		// set up a descriptor pool stored on this instance_, see header for more comments on this.
 		VkDescriptorPoolSize pool_sizes[] = {
@@ -159,5 +161,39 @@ namespace bve
 			if (ImGui::Button("Close Me")) show_another_window = false;
 			ImGui::End();
 		}
+
+		// Combo box
+		std::vector<Entity> entities = entityManager_.getEntities();
+		std::vector<bool> selected(entities.size(), false);
+
+		ImGui::Begin("Select Entities");
+		if (ImGui::BeginListBox("entities")) {
+			for (int i = 0; i < entities.size(); i++) {
+				bool wasSelected = false;;
+				if (entityManager_.hasComponent<SelectedTag>(entities[i])) {
+					selected[i] = true;
+					wasSelected = true;
+				}
+
+				std::string label = "Entity " + std::to_string(entities[i]);
+				bool isSelected = selected[i];
+
+				// Selectable returns true if the item is clicked
+				// Pass the address of the selected flag to make the widget toggleable
+				if (ImGui::Selectable(label.c_str(), &isSelected)) {
+					if (isSelected) {
+						if (!wasSelected) {
+							entityManager_.addComponent<SelectedTag>(entities[i]);
+						}
+					} else {
+						if (wasSelected) {
+							entityManager_.removeComponent<SelectedTag>(entities[i]);
+						}
+					}
+				}
+			}
+			ImGui::EndListBox();
+		}
+		ImGui::End();
 	}
 } // namespace bve

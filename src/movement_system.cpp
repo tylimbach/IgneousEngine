@@ -10,8 +10,8 @@ namespace bve
 	{
 		auto movers = entityManager_.view<MoveComponent>();
 		for (auto&& [entity, moveComp] : movers) {
-			if (entityManager_.has<TransformComponent>(entity)) {
-				auto& transformComp = entityManager_.get<TransformComponent>(entity);
+			if (entityManager_.hasComponent<TransformComponent>(entity)) {
+				auto& transformComp = entityManager_.getComponent<TransformComponent>(entity);
 				moveComp.velocity += moveComp.acceleration * dt;
 				transformComp.translation += moveComp.velocity * dt;
 			}
@@ -19,8 +19,8 @@ namespace bve
 
 		auto rotators = entityManager_.view<RotateComponent>();
 		for (auto&& [entity, rotateComp] : rotators) {
-			if (entityManager_.has<TransformComponent>(entity)) {
-				auto& transformComp = entityManager_.get<TransformComponent>(entity);
+			if (entityManager_.hasComponent<TransformComponent>(entity)) {
+				auto& transformComp = entityManager_.getComponent<TransformComponent>(entity);
 				rotateComp.velocity += rotateComp.acceleration * dt;
 				transformComp.rotation += rotateComp.velocity * dt;
 

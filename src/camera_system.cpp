@@ -10,7 +10,8 @@ namespace bve
 	{
 		if (camera == UINT32_MAX) {
 			camera = entityManager.createEntity();
-			entityManager.add<TransformComponent, MoveComponent, RotateComponent, ActiveCameraTag, CameraComponent>(camera);
+			entityManager.addComponent<MoveComponent, RotateComponent, ActiveCameraTag, CameraComponent>(camera);
+			entityManager.addComponent<TransformComponent>(camera, { {0.f, 0.f, -2.5f} });
 		}
 
 		activeCamera_ = camera;
@@ -20,7 +21,7 @@ namespace bve
 	{
 		auto cameras = entityManager_.view<CameraComponent>();
 		for (auto&& [entity, cameraComp] : cameras) {
-			assert(entityManager_.has<TransformComponent>(entity) && "Camera must have a transform component");
+			assert(entityManager_.hasComponent<TransformComponent>(entity) && "Camera must have a transform component");
 
 			cameraComp.aspect = aspectRatio;
 
@@ -33,7 +34,7 @@ namespace bve
 				break;
 			}
 
-			auto& transformComp = entityManager_.get<TransformComponent>(entity);
+			auto& transformComp = entityManager_.getComponent<TransformComponent>(entity);
 			setView(cameraComp, transformComp);
 		}
 	}
@@ -51,7 +52,7 @@ namespace bve
 	void CameraSystem::setPerspectiveProjection(CameraComponent& camera)
 	{
 		assert(glm::abs(camera.aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
-		const float tanHalfFovy = tan(camera.fovy / 2.f);
+		const float tanHalfFovy = tan(camera.fovyDegrees  / 2.f);
 
 		camera.projectionMatrix[0][0] = 1.f / (camera.aspect * tanHalfFovy);
 		camera.projectionMatrix[1][1] = 1.f / (tanHalfFovy);
@@ -87,7 +88,7 @@ namespace bve
 
 	void CameraSystem::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up)
 	{
-		auto&& transformComp = entityManager_.get<TransformComponent>(activeCamera_);
+		auto&& transformComp = entityManager_.getComponent<TransformComponent>(activeCamera_);
 
 		transformComp.translation = position;
 		directionAndUpToEulerYXZ(direction, up, transformComp.rotation);
