@@ -20,7 +20,7 @@ namespace bve
 	// using.
 	BveImgui::BveImgui(
 		BveWindow& window, BveDevice& device, VkRenderPass renderPass, uint32_t imageCount, EntityManager& entityManager)
-		: bveDevice_{ device }, entityManager_{ entityManager }
+		: bveDevice_{device}, entityManager_{entityManager}
 	{
 		// set up a descriptor pool stored on this instance_, see header for more comments on this.
 		VkDescriptorPoolSize pool_sizes[] = {
@@ -169,7 +169,7 @@ namespace bve
 		ImGui::Begin("Select Entities");
 		if (ImGui::BeginListBox("entities")) {
 			for (int i = 0; i < entities.size(); i++) {
-				bool wasSelected = false;;
+				bool wasSelected = false;
 				if (entityManager_.hasComponent<SelectedTag>(entities[i])) {
 					selected[i] = true;
 					wasSelected = true;

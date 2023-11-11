@@ -116,6 +116,11 @@ namespace bve
 		glm::vec3 color{.0f, .0f, .0f};
 	};
 
+	struct PointLightComponent
+	{
+		glm::vec4 color{.0f, .0f, .0f, .0f};
+	};
+
 	struct PlayerTag {};
 
 	struct ActiveCameraTag {};

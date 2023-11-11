@@ -78,7 +78,7 @@ namespace bve
 
 		std::vector<Entity> getEntities() const
 		{
-			return std::vector (entities_.begin(), entities_.end());
+			return std::vector(entities_.begin(), entities_.end());
 		}
 
 	private:

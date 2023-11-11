@@ -3,9 +3,10 @@
 #include "input_controller.h"
 #include "entity_manager.h"
 #include "components/components.h"
-#include "render_system.h"
-#include "camera_system.h"
-#include "movement_system.h"
+#include "systems/render_system.h"
+#include "systems/camera_system.h"
+#include "systems/point_light_render_system.h"
+#include "systems/movement_system.h"
 #include "vulkan_buffer.h"
 
 #include "bve_imgui.h"
@@ -38,6 +39,7 @@ namespace bve
 		InputController inputController{entityManager_};
 
 		RenderSystem renderSystem{bveDevice_, renderer_.getSwapChainRenderPass(), entityManager_};
+		PointLightRenderSystem pointLightRenderSystem{bveDevice_, renderer_.getSwapChainRenderPass(), entityManager_};
 		CameraSystem cameraSystem{entityManager_};
 		MovementSystem movementSystem{entityManager_};
 
@@ -63,6 +65,8 @@ namespace bve
 				gui.newFrame();
 
 				renderer_.beginSwapChainRenderPass(commandBuffer);
+
+				pointLightRenderSystem.render(frameInfo);
 				renderSystem.render(frameInfo);
 
 				gui.run();
@@ -127,21 +131,24 @@ namespace bve
 	void BasicApp::loadEntities()
 	{
 		const Entity modelEntity = entityManager_.createEntity();
-		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(bveDevice_, "models/alien.obj");
+		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(bveDevice_, "models/LowPolyCharacter.obj");
 		entityManager_.addComponent<RenderComponent>(modelEntity, {std::move(model), glm::vec3{}});
 		entityManager_.addComponent<TransformComponent>(modelEntity, {{.0f, .5f, 0.0f}});
 		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(modelEntity);
 
 		const Entity cubeEntity = entityManager_.createEntity();
 		std::unique_ptr<BveModel> cubeModel = BveModel::createModelFromFile(bveDevice_, "models/colored_cube.obj");
-		entityManager_.addComponent<RenderComponent>(cubeEntity, { std::move(cubeModel), glm::vec3{} });
-		entityManager_.addComponent<TransformComponent>(cubeEntity, { {-2.5f , -2.5f, -0.5f} });
+		entityManager_.addComponent<RenderComponent>(cubeEntity, {std::move(cubeModel), glm::vec3{}});
+		entityManager_.addComponent<TransformComponent>(cubeEntity, {{-2.5f, -2.5f, -0.5f}});
 		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(cubeEntity);
 
 		const Entity floorEntity = entityManager_.createEntity();
 		std::unique_ptr<BveModel> floorModel = BveModel::createModelFromFile(bveDevice_, "models/quad.obj");
-		entityManager_.addComponent<RenderComponent>(floorEntity, { std::move(floorModel), glm::vec3{} });
-		entityManager_.addComponent<TransformComponent>(floorEntity, { {0.5f , 0.5f, 0.f}, {3.f, 1.f, 3.f} });
+		entityManager_.addComponent<RenderComponent>(floorEntity, {std::move(floorModel), glm::vec3{}});
+		entityManager_.addComponent<TransformComponent>(floorEntity, {{0.5f, 0.5f, 0.f}, {25.f, 1.f, 25.f}});
 		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(floorEntity);
+
+		const Entity lightEntity = entityManager_.createEntity();
+		entityManager_.addComponent<PointLightComponent, TransformComponent, MoveComponent>(lightEntity);
 	}
 }
