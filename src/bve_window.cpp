@@ -13,13 +13,13 @@ namespace bve
 
 	BveWindow::~BveWindow()
 	{
-		glfwDestroyWindow(window_);
+		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
 
 	void BveWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
 	{
-		if (glfwCreateWindowSurface(instance, window_, nullptr, surface) != VK_SUCCESS) {
+		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create window surface");
 		}
 	}
@@ -30,9 +30,9 @@ namespace bve
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		window_ = glfwCreateWindow(width_, height_, windowName_.c_str(), nullptr, nullptr);
-		glfwSetWindowUserPointer(window_, this);
-		glfwSetFramebufferSizeCallback(window_, frameBufferResizeCallback);
+		window = glfwCreateWindow(width_, height_, windowName_.c_str(), nullptr, nullptr);
+		glfwSetWindowUserPointer(window, this);
+		glfwSetFramebufferSizeCallback(window, frameBufferResizeCallback);
 	}
 
 	void BveWindow::frameBufferResizeCallback(GLFWwindow* window, int width, int height)

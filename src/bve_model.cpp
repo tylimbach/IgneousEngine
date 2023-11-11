@@ -2,7 +2,7 @@
 #include "bve_utils.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "../vendor/tinyobjloader/tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 

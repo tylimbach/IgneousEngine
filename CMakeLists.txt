@@ -4,13 +4,22 @@ project ("BabyVulkanEngine")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-# Find the packages
-# set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.261.1")
 find_package(Vulkan REQUIRED)
-find_package(GLFW3 REQUIRED)
-find_package(glm REQUIRED)
 
-# Create an executable
+# set correct libraries for OS
+if(WIN32)
+    set(GLFW_LIB "${CMAKE_SOURCE_DIR}/libs/glfw3/windows_x64/glfw3.lib")
+elseif(APPLE)
+    include(CMakeDetermineSystem)
+    if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
+        set(GLFW_LIB "${CMAKE_SOURCE_DIR}/libs/glfw3/macos_arm64/libglfw3.a")
+    else()
+        set(GLFW_LIB "${CMAKE_SOURCE_DIR}/libs/gflw3/macos_x64/libglfw3.a")
+    endif()
+else()
+    endif()
+
+# create exec
 add_executable(
     ${PROJECT_NAME} 
     "src/bve_window.cpp" "src/basic_app.h"
@@ -26,38 +35,39 @@ add_executable(
     "src/renderer.h" "src/renderer.cpp"
     "src/render_system.h" "src/render_system.cpp"
     "src/camera.h" "src/camera.cpp"
-    "vendor/imgui-1.89.9/imgui.cpp" "vendor/imgui-1.89.9/imgui_demo.cpp" 
-    "vendor/imgui-1.89.9/imgui_draw.cpp" "vendor/imgui-1.89.9/imgui_tables.cpp" 
-    "vendor/imgui-1.89.9/imgui.h" "vendor/imgui-1.89.9/imgui_internal.h"
-    "vendor/imgui-1.89.9/imstb_rectpack.h" "vendor/imgui-1.89.9/imstb_textedit.h"
-    "vendor/imgui-1.89.9/imgui_widgets.cpp" "vendor/imgui-1.89.9/imstb_truetype.h"
-    "vendor/imgui-1.89.9/imgui_impl_glfw.cpp" "vendor/imgui-1.89.9/imgui_impl_glfw.h" 
-    "vendor/imgui-1.89.9/imgui_impl_vulkan.cpp" "vendor/imgui-1.89.9/imgui_impl_vulkan.h"
+    "vendor/imgui/imgui.cpp" "vendor/imgui/imgui_demo.cpp" 
+    "vendor/imgui/imgui_draw.cpp" "vendor/imgui/imgui_tables.cpp" 
+    "vendor/imgui/imgui.h" "vendor/imgui/imgui_internal.h"
+    "vendor/imgui/imstb_rectpack.h" "vendor/imgui/imstb_textedit.h"
+    "vendor/imgui/imgui_widgets.cpp" "vendor/imgui/imstb_truetype.h"
+    "vendor/imgui/imgui_impl_glfw.cpp" "vendor/imgui/imgui_impl_glfw.h" 
+    "vendor/imgui/imgui_impl_vulkan.cpp" "vendor/imgui/imgui_impl_vulkan.h"
     "src/bve_imgui.h" "src/bve_imgui.cpp" 
     "src/movement_system.h" "src/movement_system.cpp"
     "src/camera_system.h" "src/camera_system.cpp"
     "src/input_controller.cpp"  "src/input_controller.h"
-    "vendor/tinyobjloader/tiny_obj_loader.h" "src/bve_utils.h" "src/vulkan_buffer.cpp"
+    "src/bve_utils.h" "src/vulkan_buffer.cpp"
     "src/vulkan_buffer.h" "src/frame_info.h" "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp")
-# Include the directories
+
+# includes
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
     ${Vulkan_INCLUDE_DIRS}
-    ${GLFW3_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIRS}
-    "${PROJECT_SOURCE_DIR}/vendor/imgui-1.89.9"
-    "${PROJECT_SOURCE_DIR}/vendor/tinyobjloaderh"
+    "${PROJECT_SOURCE_DIR}/libs/glfw3"
+    "${PROJECT_SOURCE_DIR}/libs/glm"
+    "${PROJECT_SOURCE_DIR}/vendor/imgui"
+    "${PROJECT_SOURCE_DIR}/libs/tinyobjloader"
 )
 
-# Link the libraries to your project
+# link libraries
 target_link_libraries(
     ${PROJECT_NAME}
     ${Vulkan_LIBRARIES}
-    ${GLFW3_LIBRARY}
-    # ${GLM_LIBRARIES}
+    ${GLFW_LIB}
 )
 
+# compile shaders
 if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "AMD64")
   set(GLSL_VALIDATOR "$ENV{VULKAN_SDK}/Bin/glslangValidator.exe")
 else()
@@ -87,6 +97,7 @@ add_custom_target(
 
 add_dependencies(${PROJECT_NAME} Shaders)
 
+# custom commands - copy resources to target
 add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders/"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -109,5 +120,5 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 install( 
     TARGETS ${TARGET} 
-    RUNTIME DESTINATION 
+    RUNTIME DESTINATION
 )
