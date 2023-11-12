@@ -14,7 +14,7 @@ namespace bve
 	class RenderSystem
 	{
 	public:
-		RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager);
+		RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager, VkDescriptorSetLayout globalSetLayout);
 		~RenderSystem();
 
 		RenderSystem(const RenderSystem&) = delete;
@@ -23,7 +23,7 @@ namespace bve
 		void render(FrameInfo& frameInfo) const;
 
 	private:
-		void createPipelineLayout();
+		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
 		void createUboBuffers();
 		void createDescriptorSets();
@@ -32,11 +32,6 @@ namespace bve
 
 		std::unique_ptr<BvePipeline> bvePipeline_;
 		VkPipelineLayout pipelineLayout_;
-
-		std::vector<std::unique_ptr<VulkanBuffer>> uboBuffers_;
-		std::unique_ptr<VulkanDescriptorPool> globalPool_{};
-		std::vector<VkDescriptorSet> globalDescriptorSets_;
-		std::unique_ptr<VulkanDescriptorSetLayout> globalSetLayout_;
 
 		EntityManager& entityManager_;
 	};

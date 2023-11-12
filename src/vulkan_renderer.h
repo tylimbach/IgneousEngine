@@ -12,17 +12,17 @@
 
 namespace bve
 {
-	class Renderer
+	class VulkanRenderer
 	{
 	public:
 		static constexpr int WIDTH = 1600;
 		static constexpr int HEIGHT = 1200;
 
-		Renderer(BveWindow& window, BveDevice& device);
-		~Renderer();
+		VulkanRenderer(BveWindow& window, BveDevice& device);
+		~VulkanRenderer();
 
-		Renderer(const Renderer&) = delete;
-		Renderer& operator=(const Renderer&) = delete;
+		VulkanRenderer(const VulkanRenderer&) = delete;
+		VulkanRenderer& operator=(const VulkanRenderer&) = delete;
 
 		bool isFrameInProgress() const { return isFrameStarted_; }
 		float getAspectRatio() const { return bveSwapChain_->extentAspectRatio(); }

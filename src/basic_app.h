@@ -1,7 +1,7 @@
 #pragma once
 
 #include "bve_window.h"
-#include "renderer.h"
+#include "vulkan_renderer.h"
 #include "bve_model.h"
 
 #include "entity_manager.h"
@@ -27,7 +27,6 @@ namespace bve
 
 		BveWindow bveWindow_{WIDTH, HEIGHT, "Hello Vulkan!"};
 		BveDevice bveDevice_{bveWindow_};
-		Renderer renderer_{bveWindow_, bveDevice_};
 
 		EntityManager entityManager_{};
 	};

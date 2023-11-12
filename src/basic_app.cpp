@@ -7,6 +7,7 @@
 #include "systems/camera_system.h"
 #include "systems/point_light_render_system.h"
 #include "systems/movement_system.h"
+#include "master_renderer.h"
 #include "vulkan_buffer.h"
 
 #include "bve_imgui.h"
@@ -34,16 +35,18 @@ namespace bve
 
 	void BasicApp::run()
 	{
-		BveImgui gui{bveWindow_, bveDevice_, renderer_.getSwapChainRenderPass(), renderer_.getImageCount(), entityManager_};
+		//BveImgui gui{bveWindow_, bveDevice_, renderer_.getSwapChainRenderPass(), renderer_.getImageCount(), entityManager_};
+		//RenderSystem renderSystem{bveDevice_, renderer_.getSwapChainRenderPass(), entityManager_};
+		//PointLightRenderSystem pointLightRenderSystem{bveDevice_, renderer_.getSwapChainRenderPass(), entityManager_};
 
 		InputController inputController{entityManager_};
 
-		RenderSystem renderSystem{bveDevice_, renderer_.getSwapChainRenderPass(), entityManager_};
-		PointLightRenderSystem pointLightRenderSystem{bveDevice_, renderer_.getSwapChainRenderPass(), entityManager_};
+		MasterRenderer renderer{bveWindow_, bveDevice_, entityManager_};
+
 		CameraSystem cameraSystem{entityManager_};
 		MovementSystem movementSystem{entityManager_};
 
-		float aspectRatio = renderer_.getAspectRatio();
+		float aspectRatio = renderer.getAspectRatio();
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		while (!bveWindow_.shouldClose()) {
@@ -57,25 +60,8 @@ namespace bve
 			movementSystem.update(frameDt);
 			cameraSystem.update(aspectRatio);
 
-			const Entity camera = cameraSystem.getActiveCamera();
-
-			if (const VkCommandBuffer commandBuffer = renderer_.beginFrame()) {
-				FrameInfo frameInfo{renderer_.getFrameIndex(), frameDt, commandBuffer, camera};
-
-				gui.newFrame();
-
-				renderer_.beginSwapChainRenderPass(commandBuffer);
-
-				pointLightRenderSystem.render(frameInfo);
-				renderSystem.render(frameInfo);
-
-				gui.run();
-				gui.render(commandBuffer);
-
-				renderer_.endSwapChainRenderPass(commandBuffer);
-				renderer_.endFrame();
-			} else {
-				aspectRatio = renderer_.getAspectRatio();
+			if (!renderer.renderFrame(frameDt)) {
+				aspectRatio = renderer.getAspectRatio();
 			}
 		}
 
@@ -149,6 +135,15 @@ namespace bve
 		entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(floorEntity);
 
 		const Entity lightEntity = entityManager_.createEntity();
-		entityManager_.addComponent<PointLightComponent, TransformComponent, MoveComponent>(lightEntity);
+		entityManager_.addComponent<TransformComponent, MoveComponent>(lightEntity);
+		entityManager_.addComponent<PointLightComponent>(lightEntity, {{1.0f, 0.2f, 0.2f, 5.f}});
+
+		const Entity lightEntity2 = entityManager_.createEntity();
+		entityManager_.addComponent<TransformComponent, MoveComponent>(lightEntity2);
+		entityManager_.addComponent<PointLightComponent>(lightEntity2, {{1.f, 1.0f, 1.f, 2.5f}});
+
+		const Entity lightEntity3 = entityManager_.createEntity();
+		entityManager_.addComponent<TransformComponent, MoveComponent>(lightEntity3);
+		entityManager_.addComponent<PointLightComponent>(lightEntity3, {{0.2f, 0.2f, 1.0f, 10.f}});
 	}
 }

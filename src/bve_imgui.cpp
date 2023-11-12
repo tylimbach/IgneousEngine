@@ -162,32 +162,26 @@ namespace bve
 			ImGui::End();
 		}
 
-		// Combo box
-		std::vector<Entity> entities = entityManager_.getEntities();
-		std::vector<bool> selected(entities.size(), false);
-
-		ImGui::Begin("Select Entities");
-		if (ImGui::BeginListBox("entities")) {
-			for (int i = 0; i < entities.size(); i++) {
+		ImGui::Begin("Select");
+		if (ImGui::BeginListBox("Entities")) {
+			for (const auto& [entity, name] : entityManager_.getEntities()) {
 				bool wasSelected = false;
-				if (entityManager_.hasComponent<SelectedTag>(entities[i])) {
-					selected[i] = true;
+				if (entityManager_.hasComponent<SelectedTag>(entity)) {
 					wasSelected = true;
 				}
 
-				std::string label = "Entity " + std::to_string(entities[i]);
-				bool isSelected = selected[i];
+				bool isSelected = wasSelected;
 
 				// Selectable returns true if the item is clicked
 				// Pass the address of the selected flag to make the widget toggleable
-				if (ImGui::Selectable(label.c_str(), &isSelected)) {
+				if (ImGui::Selectable(name.c_str(), &isSelected)) {
 					if (isSelected) {
 						if (!wasSelected) {
-							entityManager_.addComponent<SelectedTag>(entities[i]);
+							entityManager_.addComponent<SelectedTag>(entity);
 						}
 					} else {
 						if (wasSelected) {
-							entityManager_.removeComponent<SelectedTag>(entities[i]);
+							entityManager_.removeComponent<SelectedTag>(entity);
 						}
 					}
 				}

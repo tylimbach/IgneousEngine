@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "vulkan_renderer.h"
 
 #include <stdexcept>
 #include <array>
@@ -9,18 +9,18 @@
 
 namespace bve
 {
-	Renderer::Renderer(BveWindow& window, BveDevice& device) : bveWindow_(window), bveDevice_(device), currentFrameIndex_(0), isFrameStarted_(false)
+	VulkanRenderer::VulkanRenderer(BveWindow& window, BveDevice& device) : bveWindow_(window), bveDevice_(device), currentFrameIndex_(0), isFrameStarted_(false)
 	{
 		recreateSwapChain();
 		createCommandBuffers();
 	}
 
-	Renderer::~Renderer()
+	VulkanRenderer::~VulkanRenderer()
 	{
 		freeCommandBuffers();
 	}
 
-	void Renderer::recreateSwapChain()
+	void VulkanRenderer::recreateSwapChain()
 	{
 		VkExtent2D extent = bveWindow_.getExtent();
 		while (extent.width == 0 || extent.height == 0) {
@@ -43,7 +43,7 @@ namespace bve
 		}
 	}
 
-	void Renderer::createCommandBuffers()
+	void VulkanRenderer::createCommandBuffers()
 	{
 		commandBuffers_.resize(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
 
@@ -58,7 +58,7 @@ namespace bve
 		}
 	}
 
-	void Renderer::freeCommandBuffers()
+	void VulkanRenderer::freeCommandBuffers()
 	{
 		vkFreeCommandBuffers(
 			bveDevice_.device(),
@@ -68,7 +68,7 @@ namespace bve
 		commandBuffers_.clear();
 	}
 
-	VkCommandBuffer Renderer::beginFrame()
+	VkCommandBuffer VulkanRenderer::beginFrame()
 	{
 		assert(!isFrameStarted_ && "Cannot call beginFrame while frame already in progress");
 
@@ -97,7 +97,7 @@ namespace bve
 		return commandBuffer;
 	}
 
-	void Renderer::endFrame()
+	void VulkanRenderer::endFrame()
 	{
 		assert(isFrameStarted_ && "Cannot call endFrame while frame is not in progress");
 
@@ -119,7 +119,7 @@ namespace bve
 		currentFrameIndex_ = (currentFrameIndex_ + 1) % BveSwapChain::MAX_FRAMES_IN_FLIGHT;
 	}
 
-	void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
+	void VulkanRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	{
 		assert(isFrameStarted_ && "Cannot call beginSwapChainRenderPass while frame is not in progress");
 		assert(commandBuffer == getCurrentCommandBuffer() && "Cannot begin render pass on another frame's command buffer");
@@ -152,7 +152,7 @@ namespace bve
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	}
 
-	void Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
+	void VulkanRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	{
 		assert(isFrameStarted_ && "Cannot call endSwapChainRenderPass while frame is not in progress");
 		assert(commandBuffer == getCurrentCommandBuffer() && "Cannot end render pass on another frame's command buffer");

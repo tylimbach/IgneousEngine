@@ -47,7 +47,7 @@ add_executable(
     "src/entity_component_registry.h"
     "src/components/components.h"
     "src/entity_component_view.h" 
-    "src/renderer.h" "src/renderer.cpp"
+    "src/vulkan_renderer.h" "src/vulkan_renderer.cpp"
     "src/systems/render_system.h" "src/systems/render_system.cpp"
     "src/camera.h" "src/camera.cpp"
     "vendor/imgui/imgui.cpp" "vendor/imgui/imgui_demo.cpp" 
@@ -62,7 +62,7 @@ add_executable(
     "src/systems/camera_system.h" "src/systems/camera_system.cpp"
     "src/input_controller.cpp"  "src/input_controller.h"
     "src/bve_utils.h" "src/vulkan_buffer.cpp"
-    "src/vulkan_buffer.h" "src/frame_info.h" "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp" "src/systems/point_light_render_system.cpp" "src/systems/point_light_render_system.h")
+    "src/vulkan_buffer.h" "src/frame_info.h" "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp" "src/systems/point_light_render_system.cpp" "src/systems/point_light_render_system.h" "src/master_renderer.h" "src/master_renderer.cpp")
 
 # includes
 target_include_directories(

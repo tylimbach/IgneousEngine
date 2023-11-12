@@ -4,11 +4,14 @@
 #include "entity_component_view.h"
 
 #include <tuple>
-#include <unordered_set>
 #include <any>
 #include <atomic>
+#include <optional>
+#include <ranges>
 #include <span>
-
+#include <string>
+#include <unordered_map>
+#include <iterator>
 
 namespace bve
 {
@@ -20,12 +23,26 @@ namespace bve
 		EntityManager() : counter_(0) {}
 		~EntityManager() = default;
 
-		Entity createEntity()
+		EntityManager(const EntityManager&) = delete;
+		void operator=(const EntityManager&) = delete;
+
+		Entity createEntity(const std::string& name = std::string())
 		{
-			Entity newEntity = counter_.fetch_add(1);
-			entities_.insert(newEntity);
+			const Entity newEntity = counter_.fetch_add(1);
+			if (!name.empty()) {
+				entityNames_.emplace(newEntity, name);
+			} else {
+				entityNames_.emplace(newEntity, "Entity " + std::to_string(newEntity));
+			}
 
 			return newEntity;
+		}
+
+		void setEntityName(Entity entity, const std::string& name)
+		{
+			if (entityNames_.contains(entity)) {
+				entityNames_[entity] = name;
+			}
 		}
 
 		template <typename Component>
@@ -70,19 +87,44 @@ namespace bve
 			return EntityComponentView<Component>(entities, components);
 		}
 
+		// returns the single Entity with the specified tag if exactly one exists
+		template <typename Component>
+		std::optional<Entity> getOnlyEntity()
+		{
+			auto view = this->view<Component>();
+			auto it = view.begin();
+			auto end = view.end();
+
+			if (it == end) {
+				// The view is empty
+				return std::nullopt;
+			}
+
+			Entity entity = std::get<0>(*it); // Assuming the entity is the first element of the tuple
+			++it;
+
+			if (it != end) {
+				// More than one element exists
+				return std::nullopt;
+			}
+
+			// Exactly one element exists
+			return entity;
+		}
+
 		template <typename Component>
 		bool removeComponent(Entity entity)
 		{
 			return EntityComponentRegistry<Component>::erase(entity);
 		}
 
-		std::vector<Entity> getEntities() const
+		std::ranges::view auto getEntities() const
 		{
-			return std::vector(entities_.begin(), entities_.end());
+			return std::views::all(entityNames_);
 		}
 
 	private:
 		std::atomic<uint32_t> counter_ = 0;
-		std::unordered_set<Entity> entities_;
+		std::unordered_map<Entity, std::string> entityNames_;
 	};
 }

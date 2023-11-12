@@ -21,21 +21,10 @@ namespace bve
 		glm::mat4 normalMatrix{1.f};
 	};
 
-	struct GlobalUbo
-	{
-		glm::mat4 projection{1.f};
-		glm::mat4 view{1.f};
-		glm::vec4 ambientLightColor{1.f, .7f, .7f, .04f};
-		glm::vec3 lightPosition{-1.f};
-		alignas(16) glm::vec4 lightColor{.8f, 1.f, .8f, 3.f};
-	};
-
-	RenderSystem::RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager)
+	RenderSystem::RenderSystem(BveDevice& device, VkRenderPass renderPass, EntityManager& entityManager, VkDescriptorSetLayout globalSetLayout)
 		: bveDevice_(device), entityManager_(entityManager)
 	{
-		createUboBuffers();
-		createDescriptorSets();
-		createPipelineLayout();
+		createPipelineLayout(globalSetLayout);
 		createPipeline(renderPass);
 	}
 
@@ -44,14 +33,14 @@ namespace bve
 		vkDestroyPipelineLayout(bveDevice_.device(), pipelineLayout_, nullptr);
 	}
 
-	void RenderSystem::createPipelineLayout()
+	void RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout)
 	{
 		VkPushConstantRange pushConstantRange;
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(SimplePushConstantData);
 
-		const std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout_->getDescriptorSetLayout()};
+		const std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -79,55 +68,11 @@ namespace bve
 			pipelineConfig);
 	}
 
-	void RenderSystem::createUboBuffers()
-	{
-		uboBuffers_ = std::vector<std::unique_ptr<VulkanBuffer>>(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (auto& uboBuffer : uboBuffers_) {
-			uboBuffer = std::make_unique<VulkanBuffer>(
-				bveDevice_,
-				sizeof(GlobalUbo),
-				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-				bveDevice_.properties.limits.minUniformBufferOffsetAlignment);
-			uboBuffer->map();
-		}
-	}
-
-	void RenderSystem::createDescriptorSets()
-	{
-		globalPool_ = VulkanDescriptorPool::Builder(bveDevice_)
-		              .setMaxSets(BveSwapChain::MAX_FRAMES_IN_FLIGHT)
-		              .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, BveSwapChain::MAX_FRAMES_IN_FLIGHT)
-		              .build();
-
-		globalSetLayout_ = VulkanDescriptorSetLayout::Builder(bveDevice_)
-		                   .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-		                   .build();
-
-		globalDescriptorSets_ = std::vector<VkDescriptorSet>(BveSwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < globalDescriptorSets_.size(); i++) {
-			auto bufferInfo = uboBuffers_[i]->descriptorInfo();
-			VulkanDescriptorWriter(*globalSetLayout_, *globalPool_)
-				.writeBuffer(0, &bufferInfo)
-				.build(globalDescriptorSets_[i]);
-		}
-	}
-
-
 	void RenderSystem::render(FrameInfo& frameInfo) const
 	{
 		bvePipeline_->bind(frameInfo.commandBuffer);
 
-		auto&& cameraComp = entityManager_.getComponent<CameraComponent>(frameInfo.camera);
-
-		GlobalUbo ubo{};
-		ubo.projection = cameraComp.projectionMatrix;
-		ubo.view = cameraComp.viewMatrix;
-		uboBuffers_[frameInfo.frameIndex]->writeToBuffer(&ubo);
-		uboBuffers_[frameInfo.frameIndex]->flush();
-
-		vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &globalDescriptorSets_[frameInfo.frameIndex], 0, nullptr);
+		vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
 
 		EntityComponentView<RenderComponent> view = entityManager_.view<RenderComponent>();
 		for (const auto&& [entity, modelComponent] : view) {
