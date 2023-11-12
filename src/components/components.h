@@ -108,6 +108,7 @@ namespace bve
 		float near{0.1f}, far{100.f};
 		glm::mat4 projectionMatrix{1.f};
 		glm::mat4 viewMatrix{1.f};
+		glm::mat4 inverseViewMatrix{1.f};
 	};
 
 	struct RenderComponent

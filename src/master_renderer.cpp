@@ -33,7 +33,8 @@ namespace bve
 		GlobalUbo ubo{};
 		ubo.projection = cameraComponent.projectionMatrix;
 		ubo.view = cameraComponent.viewMatrix;
-		pointLightRenderSystem_->updateLights(ubo);
+		ubo.inverseView = cameraComponent.inverseViewMatrix;
+		pointLightRenderSystem_->update(ubo);
 		globalUbos_[frameInfo.frameIndex]->writeToBuffer(&ubo);
 		globalUbos_[frameInfo.frameIndex]->flush();
 

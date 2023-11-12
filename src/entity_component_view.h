@@ -67,12 +67,12 @@ namespace bve
 			return Iterator(entitySpan_.end(), componentSpan_.end());
 		}
 
-		const Iterator begin() const
+		Iterator begin() const
 		{
 			return Iterator(entitySpan_.begin(), componentSpan_.begin());
 		}
 
-		const Iterator end() const
+		Iterator end() const
 		{
 			return Iterator(entitySpan_.end(), componentSpan_.end());
 		}

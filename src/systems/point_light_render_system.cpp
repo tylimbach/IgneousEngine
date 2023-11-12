@@ -71,12 +71,14 @@ namespace bve
 			pipelineConfig);
 	}
 
-	void PointLightRenderSystem::updateLights(GlobalUbo& ubo) const
+	void PointLightRenderSystem::update(GlobalUbo& ubo) const
 	{
 		EntityComponentView<PointLightComponent> view = entityManager_.view<PointLightComponent>();
 		int index = 0;
 		for (const auto&& [entity, lightComponent] : view) {
 			if (entityManager_.hasComponent<TransformComponent>(entity)) {
+				assert(index < MAX_LIGHTS && "Exceeded max number of point lights");
+
 				auto& transformComponent = entityManager_.getComponent<TransformComponent>(entity);
 				auto position = glm::vec4(transformComponent.translation, 1);
 

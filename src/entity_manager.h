@@ -11,7 +11,6 @@
 #include <span>
 #include <string>
 #include <unordered_map>
-#include <iterator>
 
 namespace bve
 {
@@ -26,105 +25,94 @@ namespace bve
 		EntityManager(const EntityManager&) = delete;
 		void operator=(const EntityManager&) = delete;
 
-		Entity createEntity(const std::string& name = std::string())
-		{
-			const Entity newEntity = counter_.fetch_add(1);
-			if (!name.empty()) {
-				entityNames_.emplace(newEntity, name);
-			} else {
-				entityNames_.emplace(newEntity, "Entity " + std::to_string(newEntity));
-			}
+		Entity createEntity(const std::string& name = std::string());
+		void setEntityName(Entity entity, const std::string& name);
+		std::string getEntityName(Entity entity);
 
-			return newEntity;
-		}
-
-		void setEntityName(Entity entity, const std::string& name)
-		{
-			if (entityNames_.contains(entity)) {
-				entityNames_[entity] = name;
-			}
-		}
+		std::ranges::view auto getEntities() const { return std::views::all(entityNames_); }
 
 		template <typename Component>
-		bool hasComponent(Entity entity)
-		{
-			return EntityComponentRegistry<Component>::contains(entity);
-		}
-
+		bool hasComponent(Entity entity);
 		template <typename... Components>
-		void addComponent(Entity entity, Components&&... components)
-		{
-			(EntityComponentRegistry<std::decay_t<Components>>::insert(entity, std::forward<Components>(components)), ...);
-		}
-
-
+		void addComponent(Entity entity, Components&&... components);
 		template <typename Component, typename... ComponentsLeft>
-		void addComponent(Entity entity)
-		{
-			EntityComponentRegistry<Component>::insert(entity, Component{});
-			if constexpr (sizeof...(ComponentsLeft) > 0) {
-				addComponent<ComponentsLeft...>(entity);
-			}
-		}
-
+		void addComponent(Entity entity);
 		template <typename Component>
-		Component& getComponent(Entity entity)
-		{
-			return EntityComponentRegistry<Component>::getComponent(entity);
-		}
-
-		//template <typename... Component>
-		//std::tuple<Component&...> get(Entity entity)
-		//{
-		//	return { this->get<Component>(entity)... };
-		//}
-
+		bool removeComponent(Entity entity);
 		template <typename Component>
-		EntityComponentView<Component> view()
-		{
-			std::span<Entity> entities = EntityComponentRegistry<Component>::viewEntities();
-			std::span<Component> components = EntityComponentRegistry<Component>::viewComponents();
-			return EntityComponentView<Component>(entities, components);
-		}
-
-		// returns the single Entity with the specified tag if exactly one exists
+		Component& getComponent(Entity entity);
 		template <typename Component>
-		std::optional<Entity> getOnlyEntity()
-		{
-			auto view = this->view<Component>();
-			auto it = view.begin();
-			auto end = view.end();
-
-			if (it == end) {
-				// The view is empty
-				return std::nullopt;
-			}
-
-			Entity entity = std::get<0>(*it); // Assuming the entity is the first element of the tuple
-			++it;
-
-			if (it != end) {
-				// More than one element exists
-				return std::nullopt;
-			}
-
-			// Exactly one element exists
-			return entity;
-		}
-
+		std::optional<Entity> getOnlyEntity();
 		template <typename Component>
-		bool removeComponent(Entity entity)
-		{
-			return EntityComponentRegistry<Component>::erase(entity);
-		}
-
-		std::ranges::view auto getEntities() const
-		{
-			return std::views::all(entityNames_);
-		}
+		EntityComponentView<Component> view();
 
 	private:
 		std::atomic<uint32_t> counter_ = 0;
 		std::unordered_map<Entity, std::string> entityNames_;
 	};
+
+
+	template <typename Component>
+	bool EntityManager::hasComponent(Entity entity)
+	{
+		return EntityComponentRegistry<Component>::contains(entity);
+	}
+
+	template <typename... Components>
+	void EntityManager::addComponent(Entity entity, Components&&... components)
+	{
+		(EntityComponentRegistry<std::decay_t<Components>>::insert(entity, std::forward<Components>(components)), ...);
+	}
+
+	template <typename Component, typename... ComponentsLeft>
+	void EntityManager::addComponent(Entity entity)
+	{
+		EntityComponentRegistry<Component>::insert(entity, Component{});
+		if constexpr (sizeof...(ComponentsLeft) > 0) {
+			addComponent<ComponentsLeft...>(entity);
+		}
+	}
+
+	template <typename Component>
+	bool EntityManager::removeComponent(Entity entity)
+	{
+		return EntityComponentRegistry<Component>::erase(entity);
+	}
+
+	template <typename Component>
+	Component& EntityManager::getComponent(Entity entity)
+	{
+		return EntityComponentRegistry<Component>::getComponent(entity);
+	}
+
+	// returns the single Entity with the specified tag if exactly one exists
+	template <typename Component>
+	std::optional<Entity> EntityManager::getOnlyEntity()
+	{
+		auto view = this->view<Component>();
+		auto it = view.begin();
+		auto end = view.end();
+
+		if (it == end) {
+			return std::nullopt;
+		}
+
+		Entity entity = std::get<0>(*it);
+		++it;
+
+		if (it != end) {
+			return std::nullopt;
+		}
+
+		return entity;
+	}
+
+	// returns a view that can be iterated over containing each entity id a
+	template <typename Component>
+	EntityComponentView<Component> EntityManager::view()
+	{
+		std::span<Entity> entities = EntityComponentRegistry<Component>::viewEntities();
+		std::span<Component> components = EntityComponentRegistry<Component>::viewComponents();
+		return EntityComponentView<Component>(entities, components);
+	}
 }

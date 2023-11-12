@@ -43,13 +43,12 @@ add_executable(
     "src/bve_device.cpp" "src/bve_device.h"
     "src/bve_swap_chain.cpp" "src/bve_swap_chain.h" 
     "src/bve_model.h" "src/bve_model.cpp" 
-    "src/entity_manager.h" 
+    "src/entity_manager.h" "src/entity_manager.cpp"
     "src/entity_component_registry.h"
     "src/components/components.h"
     "src/entity_component_view.h" 
     "src/vulkan_renderer.h" "src/vulkan_renderer.cpp"
     "src/systems/render_system.h" "src/systems/render_system.cpp"
-    "src/camera.h" "src/camera.cpp"
     "vendor/imgui/imgui.cpp" "vendor/imgui/imgui_demo.cpp" 
     "vendor/imgui/imgui_draw.cpp" "vendor/imgui/imgui_tables.cpp" 
     "vendor/imgui/imgui.h" "vendor/imgui/imgui_internal.h"
@@ -62,7 +61,10 @@ add_executable(
     "src/systems/camera_system.h" "src/systems/camera_system.cpp"
     "src/input_controller.cpp"  "src/input_controller.h"
     "src/bve_utils.h" "src/vulkan_buffer.cpp"
-    "src/vulkan_buffer.h" "src/frame_info.h" "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp" "src/systems/point_light_render_system.cpp" "src/systems/point_light_render_system.h" "src/master_renderer.h" "src/master_renderer.cpp")
+    "src/vulkan_buffer.h" "src/frame_info.h"
+    "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp"
+    "src/systems/point_light_render_system.cpp" "src/systems/point_light_render_system.h"
+    "src/master_renderer.h" "src/master_renderer.cpp")
 
 # includes
 target_include_directories(

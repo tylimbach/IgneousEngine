@@ -9,9 +9,9 @@ namespace bve
 	CameraSystem::CameraSystem(EntityManager& entityManager, Entity camera) : entityManager_(entityManager)
 	{
 		if (camera == UINT32_MAX) {
-			camera = entityManager.createEntity();
+			camera = entityManager.createEntity("Default Camera");
 			entityManager.addComponent<MoveComponent, RotateComponent, ActiveCameraTag, CameraComponent>(camera);
-			entityManager.addComponent<TransformComponent>(camera, {{0.f, 0.f, -2.5f}});
+			entityManager.addComponent<TransformComponent>(camera, TransformComponent{{0.f, -2.5f, -5.f}, {}, {}});
 		}
 
 		activeCamera_ = camera;
@@ -84,6 +84,19 @@ namespace bve
 		camera.viewMatrix[3][0] = -dot(u, transform.translation);
 		camera.viewMatrix[3][1] = -dot(v, transform.translation);
 		camera.viewMatrix[3][2] = -dot(w, transform.translation);
+
+		camera.inverseViewMatrix[0][0] = u.x;
+		camera.inverseViewMatrix[0][1] = u.y;
+		camera.inverseViewMatrix[0][2] = u.z;
+		camera.inverseViewMatrix[1][0] = v.x;
+		camera.inverseViewMatrix[1][1] = v.y;
+		camera.inverseViewMatrix[1][2] = v.z;
+		camera.inverseViewMatrix[2][0] = w.x;
+		camera.inverseViewMatrix[2][1] = w.y;
+		camera.inverseViewMatrix[2][2] = w.z;
+		camera.inverseViewMatrix[3][0] = transform.translation.x;
+		camera.inverseViewMatrix[3][1] = transform.translation.y;
+		camera.inverseViewMatrix[3][2] = transform.translation.z;
 	}
 
 	void CameraSystem::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up)

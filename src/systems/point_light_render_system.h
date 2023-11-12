@@ -20,7 +20,7 @@ namespace bve
 		PointLightRenderSystem(const PointLightRenderSystem&) = delete;
 		PointLightRenderSystem& operator=(const PointLightRenderSystem&) = delete;
 
-		void updateLights(GlobalUbo& ubo) const;
+		void update(GlobalUbo& ubo) const;
 		void render(FrameInfo& frameInfo) const;
 
 	private:
