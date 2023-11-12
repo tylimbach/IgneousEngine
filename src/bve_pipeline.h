@@ -37,9 +37,13 @@ namespace bve
 
 		BvePipeline(const BvePipeline&) = delete;
 		BvePipeline& operator=(const BvePipeline&) = delete;
+		BvePipeline(BvePipeline&&) = delete;
+		BvePipeline& operator=(BvePipeline&&) = delete;
 
 		void bind(VkCommandBuffer commandBuffer);
+
 		static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		static void enableAlphaBlending(PipelineConfigInfo& configInfo);
 
 	private:
 		static std::vector<char> readFile(const std::string& filepath);

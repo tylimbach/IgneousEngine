@@ -1,4 +1,5 @@
 #version 450
+#extension GL_KHR_vulkan_glsl : enable
 
 const vec2 OFFSETS[6] = vec2[](
   vec2(-1.0, -1.0),
@@ -31,14 +32,12 @@ layout (push_constant) uniform Push {
 	float radius;
 } push;
 
-const float LIGHT_RADIUS = 0.1;
-
 void main() {
 	fragOffset = OFFSETS[gl_VertexIndex];
 	vec3 cameraRightWorld = {ubo.view[0][0], ubo.view[1][0], ubo.view[2][0]};
 	vec3 cameraUpWorld = {ubo.view[0][1], ubo.view[1][1], ubo.view[2][1]};
 
-	vec3 positionWorld = push.position.xyz 
+	vec3 positionWorld = push.position.xyz
 		+ push.radius * fragOffset.x * cameraRightWorld
 		+ push.radius * fragOffset.y * cameraUpWorld;
 

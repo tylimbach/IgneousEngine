@@ -18,6 +18,8 @@ namespace bve
 
 		VulkanBuffer(const VulkanBuffer&) = delete;
 		VulkanBuffer& operator=(const VulkanBuffer&) = delete;
+		VulkanBuffer(const VulkanBuffer&&) = delete;
+		VulkanBuffer& operator=(const VulkanBuffer&&) = delete;
 
 		VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 		void unmap();

@@ -8,7 +8,6 @@ namespace bve
 	{
 	public:
 		MovementSystem(EntityManager& entityManager);
-		~MovementSystem() = default;
 
 		void update(float dt);
 

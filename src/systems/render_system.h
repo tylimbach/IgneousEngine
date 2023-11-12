@@ -19,14 +19,14 @@ namespace bve
 
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
+		RenderSystem(const RenderSystem&&) = delete;
+		RenderSystem& operator=(const RenderSystem&&) = delete;
 
 		void render(FrameInfo& frameInfo) const;
 
 	private:
 		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
-		void createUboBuffers();
-		void createDescriptorSets();
 
 		BveDevice& bveDevice_;
 

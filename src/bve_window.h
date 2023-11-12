@@ -15,6 +15,8 @@ namespace bve
 
 		BveWindow(const BveWindow&) = delete;
 		BveWindow& operator=(const BveWindow&) = delete;
+		BveWindow(const BveWindow&&) = delete;
+		BveWindow& operator=(const BveWindow&&) = delete;
 
 		bool shouldClose() { return glfwWindowShouldClose(window); }
 		VkExtent2D getExtent() { return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)}; }

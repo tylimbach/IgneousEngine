@@ -30,8 +30,11 @@ namespace bve
 
 		VulkanDescriptorSetLayout(BveDevice& bveDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
 		~VulkanDescriptorSetLayout();
+
 		VulkanDescriptorSetLayout(const VulkanDescriptorSetLayout&) = delete;
 		VulkanDescriptorSetLayout& operator=(const VulkanDescriptorSetLayout&) = delete;
+		VulkanDescriptorSetLayout(const VulkanDescriptorSetLayout&&) = delete;
+		VulkanDescriptorSetLayout& operator=(const VulkanDescriptorSetLayout&&) = delete;
 
 		VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout_; }
 
@@ -69,8 +72,11 @@ namespace bve
 			VkDescriptorPoolCreateFlags poolFlags,
 			const std::vector<VkDescriptorPoolSize>& poolSizes);
 		~VulkanDescriptorPool();
+
 		VulkanDescriptorPool(const VulkanDescriptorPool&) = delete;
 		VulkanDescriptorPool& operator=(const VulkanDescriptorPool&) = delete;
+		VulkanDescriptorPool(const VulkanDescriptorPool&&) = delete;
+		VulkanDescriptorPool& operator=(const VulkanDescriptorPool&&) = delete;
 
 		bool allocateDescriptorSet(VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& descriptor) const;
 

@@ -19,6 +19,8 @@ namespace bve
 
 		BasicApp(const BasicApp&) = delete;
 		BasicApp& operator=(const BasicApp&) = delete;
+		BasicApp(const BasicApp&&) = delete;
+		BasicApp& operator=(const BasicApp&&) = delete;
 
 		void run();
 

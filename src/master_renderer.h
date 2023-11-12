@@ -18,6 +18,8 @@ namespace bve
 
 		MasterRenderer(const MasterRenderer&) = delete;
 		MasterRenderer& operator=(const MasterRenderer&) = delete;
+		MasterRenderer(const MasterRenderer&&) = delete;
+		MasterRenderer& operator=(const MasterRenderer&&) = delete;
 
 		float getAspectRatio() const { return renderer_.getAspectRatio(); }
 

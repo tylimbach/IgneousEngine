@@ -13,6 +13,11 @@ namespace bve
 		InputController(EntityManager& entityManager);
 		~InputController();
 
+		InputController(const InputController&) = delete;
+		void operator=(const InputController&) = delete;
+		InputController(const InputController&&) = delete;
+		void operator=(const InputController&&) = delete;
+
 		struct KeyMappings
 		{
 			int moveLeft = GLFW_KEY_A;

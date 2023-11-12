@@ -60,6 +60,7 @@ namespace bve
 
 		PipelineConfigInfo pipelineConfig{};
 		BvePipeline::defaultPipelineConfigInfo(pipelineConfig);
+		BvePipeline::enableAlphaBlending(pipelineConfig);
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = pipelineLayout_;
 		pipelineConfig.attributeDescriptions.clear();

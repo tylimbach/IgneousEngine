@@ -24,6 +24,8 @@ namespace bve
 
 		EntityManager(const EntityManager&) = delete;
 		void operator=(const EntityManager&) = delete;
+		EntityManager(const EntityManager&&) = delete;
+		void operator=(const EntityManager&&) = delete;
 
 		Entity createEntity(const std::string& name = std::string());
 		void setEntityName(Entity entity, const std::string& name);

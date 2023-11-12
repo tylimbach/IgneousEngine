@@ -13,7 +13,6 @@ namespace bve
 	{
 	public:
 		CameraSystem(EntityManager& entityManager, Entity camera = UINT32_MAX);
-		~CameraSystem() = default;
 
 		void update(float aspectRatio);
 		Entity getActiveCamera() const { return activeCamera_; }

@@ -31,6 +31,11 @@ namespace bve
 		BveImgui(BveWindow& window, BveDevice& device, VkRenderPass renderPass, uint32_t imageCount, EntityManager& entityManager);
 		~BveImgui();
 
+		BveImgui(const BveImgui&) = delete;
+		BveImgui& operator=(const BveImgui&) = delete;
+		BveImgui(const BveImgui&&) = delete;
+		BveImgui& operator=(const BveImgui&&) = delete;
+
 		void newFrame();
 
 		void render(VkCommandBuffer commandBuffer);

@@ -41,10 +41,12 @@ namespace bve
 		// render
 		gui_.newFrame();
 		renderer_.beginSwapChainRenderPass(commandBuffer);
-		pointLightRenderSystem_->render(frameInfo);
+
 		renderSystem_->render(frameInfo);
+		pointLightRenderSystem_->render(frameInfo);
 		gui_.run();
 		gui_.render(commandBuffer);
+
 		renderer_.endSwapChainRenderPass(commandBuffer);
 		renderer_.endFrame();
 

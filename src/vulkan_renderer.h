@@ -23,6 +23,8 @@ namespace bve
 
 		VulkanRenderer(const VulkanRenderer&) = delete;
 		VulkanRenderer& operator=(const VulkanRenderer&) = delete;
+		VulkanRenderer(const VulkanRenderer&&) = delete;
+		VulkanRenderer& operator=(const VulkanRenderer&&) = delete;
 
 		bool isFrameInProgress() const { return isFrameStarted_; }
 		float getAspectRatio() const { return bveSwapChain_->extentAspectRatio(); }

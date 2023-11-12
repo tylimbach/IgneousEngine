@@ -136,17 +136,17 @@ namespace bve
 
 		const Entity lightEntity = entityManager_.createEntity("Red Light");
 		entityManager_.addComponent<MoveComponent>(lightEntity);
-		entityManager_.addComponent<TransformComponent>(lightEntity, TransformComponent{{1.f, -2.f, -1.f}, {0.1f, 0.1f, 0.1f}, {}});
+		entityManager_.addComponent<TransformComponent>(lightEntity, TransformComponent{{1.f, -2.f, -1.f}});
 		entityManager_.addComponent<PointLightComponent>(lightEntity, {{1.0f, 0.2f, 0.2f, 2.f}});
 
 		const Entity lightEntity2 = entityManager_.createEntity("Green Light");
 		entityManager_.addComponent<MoveComponent>(lightEntity2);
-		entityManager_.addComponent<TransformComponent>(lightEntity2, TransformComponent{{0.f, -2.f, 1.f}, {0.1f, 0.1f, 0.1f}, {}});
+		entityManager_.addComponent<TransformComponent>(lightEntity2, TransformComponent{{0.f, -2.f, 1.f}, {0.5f, 0.5f, 0.5f}});
 		entityManager_.addComponent<PointLightComponent>(lightEntity2, {{0.2f, 1.0f, 0.2f, 2.f}});
 
 		const Entity lightEntity3 = entityManager_.createEntity("Blue Light");
 		entityManager_.addComponent<MoveComponent>(lightEntity3);
-		entityManager_.addComponent<TransformComponent>(lightEntity3, TransformComponent{{-1.f, -2.f, -1.f}, {0.1f, 0.1f, 0.1f}, {}});
+		entityManager_.addComponent<TransformComponent>(lightEntity3, TransformComponent{{-1.f, -2.f, -1.f}, {0.5f, 0.5f, 0.5f}});
 		entityManager_.addComponent<PointLightComponent>(lightEntity3, {{0.2f, 0.2f, 1.0f, 2.f}});
 	}
 }

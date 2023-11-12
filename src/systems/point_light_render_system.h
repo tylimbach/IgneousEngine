@@ -19,6 +19,8 @@ namespace bve
 
 		PointLightRenderSystem(const PointLightRenderSystem&) = delete;
 		PointLightRenderSystem& operator=(const PointLightRenderSystem&) = delete;
+		PointLightRenderSystem(const PointLightRenderSystem&&) = delete;
+		PointLightRenderSystem& operator=(const PointLightRenderSystem&&) = delete;
 
 		void update(GlobalUbo& ubo) const;
 		void render(FrameInfo& frameInfo) const;
@@ -26,8 +28,6 @@ namespace bve
 	private:
 		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
-		void createUboBuffers();
-		void createDescriptorSets();
 
 		BveDevice& bveDevice_;
 
