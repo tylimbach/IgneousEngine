@@ -32,9 +32,9 @@ void main() {
 	}
 
 	// smooth step
-	// float alpha = smoothstep(1.0, 0.0, dist);
-	// outColor = vec4(push.color.xyz, alpha);
+	float alpha = smoothstep(1.0, 0.0, dist);
+	outColor = vec4(push.color.xyz, alpha);
 
 	// cosine
-	outColor = vec4(push.color.xyz, 0.5 * cos((dist * M_PI) + 1.0));
+	// outColor = vec4(push.color.xyz, 0.5 * cos((dist * M_PI) + 1.0));
 }
