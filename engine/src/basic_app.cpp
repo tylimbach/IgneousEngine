@@ -29,29 +29,74 @@ namespace bve
 {
 	BasicApp::BasicApp()
 	{
-		loadEntities();
 	}
 
 	BasicApp::~BasicApp() = default;
 
+	void loadEntities(EntityManager& entityManager, BveDevice& device)
+	{
+		const Entity modelEntity = entityManager.createEntity("Guy");
+		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(device, "models/LowPolyCharacter.obj");
+		entityManager.addComponent<RenderComponent>(modelEntity, { std::move(model), glm::vec3{} });
+		entityManager.addComponent<TransformComponent>(modelEntity, TransformComponent{ {1.f, -1.f, 0.0f} });
+		entityManager.addComponent<MoveComponent, RotateComponent>(modelEntity);
+
+		//const Entity cubeEntity = entityManager.createEntity("Cube");
+		//std::unique_ptr<BveModel> cubeModel = BveModel::createModelFromFile(bveDevice_, "models/colored_cube.obj");
+		//entityManager.addComponent<RenderComponent>(cubeEntity, {std::move(cubeModel), glm::vec3{}});
+		//entityManager.addComponent<TransformComponent>(cubeEntity, {{-2.5f, -2.5f, -0.5f}});
+		//entityManager.addComponent<MoveComponent, RotateComponent, PlayerTag>(cubeEntity);
+
+		const Entity floorEntity = entityManager.createEntity("Floor");
+		std::unique_ptr<BveModel> floorModel = BveModel::createModelFromFile(device, "models/quad.obj");
+		entityManager.addComponent<RenderComponent>(floorEntity, { std::move(floorModel), glm::vec3{} });
+		entityManager.addComponent<TransformComponent>(floorEntity, { {0.5f, 0.5f, 0.f}, {10.f, 1.f, 10.f} });
+		entityManager.addComponent<MoveComponent, RotateComponent>(floorEntity);
+
+		const Entity smoothVase = entityManager.createEntity("Smooth Vase");
+		std::unique_ptr<BveModel> smoothVaseModel = BveModel::createModelFromFile(device, "models/smooth_vase.obj");
+		entityManager.addComponent<RenderComponent>(smoothVase, { std::move(smoothVaseModel), glm::vec3{} });
+		entityManager.addComponent<TransformComponent>(smoothVase, { {0.5f, -0.f, 0.f} });
+		entityManager.addComponent<MoveComponent, RotateComponent>(smoothVase);
+
+		const Entity lightEntity = entityManager.createEntity("Red Light");
+		entityManager.addComponent<MoveComponent>(lightEntity);
+		entityManager.addComponent<TransformComponent>(lightEntity, TransformComponent{ {1.f, -2.f, -1.f}, {0.2f, 0.2f, 0.2f} });
+		entityManager.addComponent<PointLightComponent>(lightEntity, { {1.0f, 0.2f, 0.2f, 2.f} });
+
+		const Entity lightEntity2 = entityManager.createEntity("Green Light");
+		entityManager.addComponent<MoveComponent>(lightEntity2);
+		entityManager.addComponent<TransformComponent>(lightEntity2, TransformComponent{ {0.f, -2.f, 1.f}, {0.2f, 0.2f, 0.2f} });
+		entityManager.addComponent<PointLightComponent>(lightEntity2, { {0.2f, 1.0f, 0.2f, 2.f} });
+
+		const Entity lightEntity3 = entityManager.createEntity("Blue Light");
+		entityManager.addComponent<MoveComponent>(lightEntity3);
+		entityManager.addComponent<TransformComponent>(lightEntity3, TransformComponent{ {-1.f, -2.f, -1.f}, {0.2f, 0.2f, 0.2f} });
+		entityManager.addComponent<PointLightComponent>(lightEntity3, { {0.2f, 0.2f, 1.0f, 2.f} });
+	}
+
 	void BasicApp::run()
 	{
+		BveWindow bveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
+		BveDevice bveDevice{ bveWindow };
+		loadEntities(entityManager_, bveDevice);
+
 		InputController inputController{entityManager_};
-		MasterRenderer renderer{bveWindow_, bveDevice_, entityManager_};
+		MasterRenderer renderer{bveWindow, bveDevice, entityManager_};
 		CameraSystem cameraSystem{entityManager_};
 		MovementSystem movementSystem{entityManager_};
 
 		float aspectRatio = renderer.getAspectRatio();
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
-		while (!bveWindow_.shouldClose()) {
+		while (!bveWindow.shouldClose()) {
 			glfwPollEvents();
 
 			auto newTime = std::chrono::high_resolution_clock::now();
 			const float frameDt = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
-			inputController.update(bveWindow_.getGLFWWindow());
+			inputController.update(bveWindow.getGLFWWindow());
 			movementSystem.update(frameDt);
 			cameraSystem.update(aspectRatio);
 
@@ -60,7 +105,7 @@ namespace bve
 			}
 		}
 
-		vkDeviceWaitIdle(bveDevice_.device());
+		vkDeviceWaitIdle(bveDevice.device());
 	}
 
 	void subdivideTriangle(int subdivisionIterations, std::vector<BveModel::Vertex>& inVertices, std::vector<BveModel::Vertex>& outVertices)
@@ -107,47 +152,5 @@ namespace bve
 		}
 
 		return std::make_unique<BveModel>(device, modelBuilder);
-	}
-
-	void BasicApp::loadEntities()
-	{
-		const Entity modelEntity = entityManager_.createEntity("Guy");
-		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(bveDevice_, "models/LowPolyCharacter.obj");
-		entityManager_.addComponent<RenderComponent>(modelEntity, {std::move(model), glm::vec3{}});
-		entityManager_.addComponent<TransformComponent>(modelEntity, TransformComponent{{1.f, -1.f, 0.0f}});
-		entityManager_.addComponent<MoveComponent, RotateComponent>(modelEntity);
-
-		//const Entity cubeEntity = entityManager_.createEntity("Cube");
-		//std::unique_ptr<BveModel> cubeModel = BveModel::createModelFromFile(bveDevice_, "models/colored_cube.obj");
-		//entityManager_.addComponent<RenderComponent>(cubeEntity, {std::move(cubeModel), glm::vec3{}});
-		//entityManager_.addComponent<TransformComponent>(cubeEntity, {{-2.5f, -2.5f, -0.5f}});
-		//entityManager_.addComponent<MoveComponent, RotateComponent, PlayerTag>(cubeEntity);
-
-		const Entity floorEntity = entityManager_.createEntity("Floor");
-		std::unique_ptr<BveModel> floorModel = BveModel::createModelFromFile(bveDevice_, "models/quad.obj");
-		entityManager_.addComponent<RenderComponent>(floorEntity, {std::move(floorModel), glm::vec3{}});
-		entityManager_.addComponent<TransformComponent>(floorEntity, {{0.5f, 0.5f, 0.f}, {10.f, 1.f, 10.f}});
-		entityManager_.addComponent<MoveComponent, RotateComponent>(floorEntity);
-
-		const Entity smoothVase = entityManager_.createEntity("Smooth Vase");
-		std::unique_ptr<BveModel> smoothVaseModel = BveModel::createModelFromFile(bveDevice_, "models/smooth_vase.obj");
-		entityManager_.addComponent<RenderComponent>(smoothVase, {std::move(smoothVaseModel), glm::vec3{}});
-		entityManager_.addComponent<TransformComponent>(smoothVase, {{0.5f, -0.f, 0.f}});
-		entityManager_.addComponent<MoveComponent, RotateComponent>(smoothVase);
-
-		const Entity lightEntity = entityManager_.createEntity("Red Light");
-		entityManager_.addComponent<MoveComponent>(lightEntity);
-		entityManager_.addComponent<TransformComponent>(lightEntity, TransformComponent{{1.f, -2.f, -1.f}, {0.2f, 0.2f, 0.2f} });
-		entityManager_.addComponent<PointLightComponent>(lightEntity, {{1.0f, 0.2f, 0.2f, 2.f}});
-
-		const Entity lightEntity2 = entityManager_.createEntity("Green Light");
-		entityManager_.addComponent<MoveComponent>(lightEntity2);
-		entityManager_.addComponent<TransformComponent>(lightEntity2, TransformComponent{{0.f, -2.f, 1.f}, {0.2f, 0.2f, 0.2f}});
-		entityManager_.addComponent<PointLightComponent>(lightEntity2, {{0.2f, 1.0f, 0.2f, 2.f}});
-
-		const Entity lightEntity3 = entityManager_.createEntity("Blue Light");
-		entityManager_.addComponent<MoveComponent>(lightEntity3);
-		entityManager_.addComponent<TransformComponent>(lightEntity3, TransformComponent{{-1.f, -2.f, -1.f}, {0.2f, 0.2f, 0.2f} });
-		entityManager_.addComponent<PointLightComponent>(lightEntity3, {{0.2f, 0.2f, 1.0f, 2.f}});
 	}
 }
