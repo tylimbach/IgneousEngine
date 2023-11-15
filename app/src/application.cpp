@@ -1,20 +1,15 @@
 #include <engine.h>
 
-#include <cstdlib>
 #include <iostream>
-#include <stdexcept>
 
-int main()
+class ExampleApp : public bve::Application
 {
-	bve::BasicApp app{};
+public:
+	ExampleApp() {};
+	~ExampleApp() {};
+};
 
-	try {
-		app.run();
-	}
-	catch (const std::exception& e) {
-		std::cerr << e.what() << '\n';
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
+bve::Application* bve::CreateApplication()
+{
+	return new ExampleApp();
 }

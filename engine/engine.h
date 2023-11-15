@@ -1,3 +1,5 @@
 #pragma once
 
-#include "src/basic_app.h"
+#include "src/entry.h"
+#include "src/application.h"
+#include "src/log.h"

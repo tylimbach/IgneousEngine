@@ -1,14 +1,5 @@
 #pragma once
 
-/**
- * @brief Any id set to this should be considered invalid,
- * and not actually pointing to a real object.
- */
-#define INVALID_ID_U64 18446744073709551615UL
-#define INVALID_ID 4294967295U
-#define INVALID_ID_U16 65535U
-#define INVALID_ID_U8 255U
-
  // Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 #define KPLATFORM_WINDOWS 1

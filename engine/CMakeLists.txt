@@ -8,10 +8,15 @@ set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-
 cmake_minimum_required (VERSION 3.4)
 
 project ("BabyVulkanEngine")
+
+set(spdlog_DIR "${PROJECT_SOURCE_DIR}/vendor/spdlog/build")
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    find_package(spdlog REQUIRED)
+endif()
 
 if (DEFINED VULKAN_SDK_PATH)
   set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
@@ -43,8 +48,8 @@ else()
 
 add_library(
     ${PROJECT_NAME} SHARED 
-    "src/bve_window.cpp" "src/basic_app.h"
-    "src/basic_app.cpp" 
+    "src/bve_window.cpp" "src/application.h"
+    "src/application.cpp" 
     "src/bve_pipeline.h" "src/bve_pipeline.cpp"
     "src/bve_device.cpp" "src/bve_device.h"
     "src/bve_swap_chain.cpp" "src/bve_swap_chain.h" 
@@ -70,7 +75,7 @@ add_library(
     "src/vulkan_buffer.h" "src/frame_info.h"
     "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp"
     "src/systems/point_light_render_system.cpp" "src/systems/point_light_render_system.h"
-    "src/master_renderer.h" "src/master_renderer.cpp" "engine.h")
+    "src/master_renderer.h" "src/master_renderer.cpp" "engine.h" "src/entry.h" "src/log.h" "src/log.cpp" "src/event.h")
 
 # includes
 target_include_directories(
@@ -81,6 +86,7 @@ target_include_directories(
     "${PROJECT_SOURCE_DIR}/libs/glm"
     "${PROJECT_SOURCE_DIR}/vendor/imgui"
     "${PROJECT_SOURCE_DIR}/libs/tinyobjloader"
+    "${PROJECT_SOURCE_DIR}/vendor/spdlog/includes"
 )
 
 # link libraries
@@ -88,6 +94,7 @@ target_link_libraries(
     ${PROJECT_NAME}
     ${Vulkan_LIBRARIES}
     ${GLFW_LIB}
+    spdlog::spdlog
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE KEXPORT)

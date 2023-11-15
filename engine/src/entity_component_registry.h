@@ -20,8 +20,9 @@ namespace bve
 			return instance;
 		}
 
-		static void insert(uint32_t id, Component value)
+		static void insert(const uint32_t id, Component value)
 		{
+			// todo: add size tracking and make resizing more efficient
 			if (id >= lookup_.size()) {
 				lookup_.resize(id + 1, UINT32_MAX); // Using UINT32_MAX as a sentinel for non-existent entries
 			}
@@ -31,7 +32,7 @@ namespace bve
 			entities_.push_back(id);
 		}
 
-		static bool erase(uint32_t id)
+		static bool erase(const uint32_t id)
 		{
 			if (id < lookup_.size() && lookup_[id] != UINT32_MAX) {
 				uint32_t last = static_cast<uint32_t>(components_.size()) - 1;
@@ -52,17 +53,17 @@ namespace bve
 			return false;
 		}
 
-		static bool contains(uint32_t id)
+		static bool contains(const uint32_t id)
 		{
 			return id < lookup_.size() && lookup_[id] != UINT32_MAX;
 		}
 
-		static Component& getComponent(uint32_t id)
+		static Component& getComponent(const uint32_t id)
 		{
 			return components_[lookup_[id]];
 		}
 
-		static uint32_t getEntity(uint32_t index)
+		static uint32_t getEntity(const uint32_t index)
 		{
 			return entities_[index];
 		}

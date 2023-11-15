@@ -1,4 +1,4 @@
-#include "basic_app.h"
+#include "application.h"
 
 #include "input_controller.h"
 #include "entity_manager.h"
@@ -25,16 +25,19 @@
 #include <chrono>
 #include <iostream>
 
+#include "log.h"
+
 namespace bve
 {
-	BasicApp::BasicApp()
+	Application::Application()
 	{
 	}
 
-	BasicApp::~BasicApp() = default;
+	Application::~Application() = default;
 
 	void loadEntities(EntityManager& entityManager, BveDevice& device)
 	{
+		LOG_INFO("loading entities");
 		const Entity modelEntity = entityManager.createEntity("Guy");
 		std::unique_ptr<BveModel> model = BveModel::createModelFromFile(device, "models/LowPolyCharacter.obj");
 		entityManager.addComponent<RenderComponent>(modelEntity, { std::move(model), glm::vec3{} });
@@ -75,7 +78,7 @@ namespace bve
 		entityManager.addComponent<PointLightComponent>(lightEntity3, { {0.2f, 0.2f, 1.0f, 2.f} });
 	}
 
-	void BasicApp::run()
+	void Application::run()
 	{
 		BveWindow bveWindow{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		BveDevice bveDevice{ bveWindow };
