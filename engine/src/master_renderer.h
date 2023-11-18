@@ -3,10 +3,10 @@
 #include "vulkan_renderer.h"
 #include "systems/render_system.h"
 #include "systems/point_light_render_system.h"
+#include "bve_imgui.h"
+
 #include <vector>
 #include <memory>
-
-#include "bve_imgui.h"
 
 namespace bve
 {

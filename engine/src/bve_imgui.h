@@ -2,16 +2,11 @@
 
 #include "bve_device.h"
 #include "bve_window.h"
+#include "entity_manager.h"
 
-// libs
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
-
-// std
-#include <stdexcept>
-
-#include "entity_manager.h"
 
 // This whole class is only necessary right now because it needs to manage the descriptor pool
 // because we haven't set one up anywhere else in the application, and we manage the

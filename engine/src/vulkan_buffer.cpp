@@ -1,15 +1,5 @@
-/*
- * Encapsulates a vulkan buffer
- *
- * Initially based off VulkanBuffer by Sascha Willems -
- * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
- */
-
+#include "pch.h"
 #include "vulkan_buffer.h"
-
-// std
-#include <cassert>
-#include <cstring>
 
 namespace bve
 {

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "bve_model.h"
 #include "bve_utils.h"
 
@@ -6,8 +7,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-#include <unordered_map>
-#include <cassert>
 #include <stdexcept>
 
 namespace std

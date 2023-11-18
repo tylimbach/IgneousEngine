@@ -1,4 +1,8 @@
+#include "../pch.h"
 #include "point_light_render_system.h"
+#include "../bve_swap_chain.h"
+#include "../entity_manager.h"
+#include "../components/components.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -6,12 +10,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include <stdexcept>
-#include <thread>
 
-#include "../bve_swap_chain.h"
-#include "../entity_manager.h"
-#include "../vulkan_descriptors.h"
-#include "../components/components.h"
 
 namespace bve
 {

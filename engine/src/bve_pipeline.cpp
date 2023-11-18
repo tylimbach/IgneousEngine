@@ -1,10 +1,9 @@
+#include "pch.h"
 #include "bve_pipeline.h"
 #include "bve_model.h"
 
 #include <fstream>
 #include <stdexcept>
-#include <iostream>
-#include <cassert>
 
 namespace bve
 {

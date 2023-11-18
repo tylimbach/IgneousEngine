@@ -1,3 +1,4 @@
+#include "../pch.h"
 #include "camera_system.h"
 
 #include "movement_system.h"

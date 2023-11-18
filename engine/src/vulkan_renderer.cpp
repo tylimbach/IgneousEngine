@@ -1,11 +1,9 @@
+#include "pch.h"
 #include "vulkan_renderer.h"
 
-#include <stdexcept>
-#include <array>
-#include <thread>
-
-#include "entity_manager.h"
 #include "components/components.h"
+
+#include <stdexcept>
 
 namespace bve
 {

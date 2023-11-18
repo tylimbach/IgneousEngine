@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "input_controller.h"
 #include "components/components.h"
 

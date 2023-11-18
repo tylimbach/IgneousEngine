@@ -1,11 +1,8 @@
+#include "pch.h"
 #include "bve_device.h"
 
-// std headers
 #include <cstring>
-#include <iostream>
-#include <set>
 #include <stdexcept>
-#include <unordered_set>
 
 namespace bve
 {

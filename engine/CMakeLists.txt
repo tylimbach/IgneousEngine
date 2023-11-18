@@ -12,6 +12,8 @@ cmake_minimum_required (VERSION 3.4)
 
 project ("BabyVulkanEngine")
 
+add_subdirectory("${PROJECT_SOURCE_DIR}/vendor/spdlog")
+
 set(spdlog_DIR "${PROJECT_SOURCE_DIR}/vendor/spdlog/build")
 if(NOT TARGET spdlog)
     # Stand-alone build
@@ -19,11 +21,11 @@ if(NOT TARGET spdlog)
 endif()
 
 if (DEFINED VULKAN_SDK_PATH)
-  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") 
+  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib")
   set(Vulkan_FOUND "True")
 else()
-  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
+  find_package(Vulkan REQUIRED) 
   message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
 endif()
 if (NOT Vulkan_FOUND)
@@ -75,7 +77,11 @@ add_library(
     "src/vulkan_buffer.h" "src/frame_info.h"
     "src/vulkan_descriptors.h" "src/vulkan_descriptors.cpp"
     "src/systems/point_light_render_system.cpp" "src/systems/point_light_render_system.h"
-    "src/master_renderer.h" "src/master_renderer.cpp" "engine.h" "src/entry.h" "src/log.h" "src/log.cpp" "src/event.h")
+    "src/master_renderer.h" "src/master_renderer.cpp"
+    "engine.h" "src/entry.h" 
+    "src/log.h" "src/log.cpp" 
+    "src/core/events/event.h" "src/core/events/key_codes.h"
+    "src/core/events/key_events.h" "src/window.h")
 
 # includes
 target_include_directories(
@@ -96,6 +102,8 @@ target_link_libraries(
     ${GLFW_LIB}
     spdlog::spdlog
 )
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE src/pch.h)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE KEXPORT)
 

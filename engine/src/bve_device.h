@@ -2,8 +2,6 @@
 
 #include "bve_window.h"
 
-// std lib headers
-#include <string>
 #include <vector>
 
 namespace bve
