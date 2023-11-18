@@ -1,3 +1,4 @@
+#include "../pch.h"
 #include "render_system.h"
 
 #define GLM_FORCE_RADIANS
@@ -6,11 +7,9 @@
 #include <glm/gtc/constants.hpp>
 
 #include <stdexcept>
-#include <thread>
 
 #include "../bve_swap_chain.h"
 #include "../entity_manager.h"
-#include "../vulkan_descriptors.h"
 #include "../components/components.h"
 
 namespace bve

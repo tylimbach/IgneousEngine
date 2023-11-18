@@ -1,12 +1,7 @@
+#include "pch.h"
 #include "bve_swap_chain.h"
 
-// std
-#include <array>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
 #include <limits>
-#include <set>
 #include <stdexcept>
 
 namespace bve

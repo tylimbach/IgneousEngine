@@ -3,8 +3,6 @@
 #include "spdlog/spdlog.h"
 #include "defines.h"
 
-#include <memory.h>
-
 namespace bve 
 {
 	class KAPI Log

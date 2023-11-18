@@ -1,5 +1,4 @@
-#pragma once
-
+#include "pch.h"
 #include "bve_window.h"
 
 #include <stdexcept>

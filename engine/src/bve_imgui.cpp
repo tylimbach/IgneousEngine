@@ -1,17 +1,14 @@
+#include "pch.h"
 #include "bve_imgui.h"
-
 #include "bve_device.h"
 #include "bve_window.h"
+#include "components/components.h"
 
-// libs
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
-// std
 #include <stdexcept>
-
-#include "components/components.h"
 
 namespace bve
 {

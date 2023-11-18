@@ -4,10 +4,8 @@
 #include "../bve_model.h"
 #include "../frame_info.h"
 #include "../entity_manager.h"
-#include "../vulkan_descriptors.h"
 
 #include <memory>
-#include <vector>
 
 namespace bve
 {

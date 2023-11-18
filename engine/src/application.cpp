@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "application.h"
-
 #include "input_controller.h"
 #include "entity_manager.h"
 #include "components/components.h"
@@ -8,9 +8,7 @@
 #include "systems/point_light_render_system.h"
 #include "systems/movement_system.h"
 #include "master_renderer.h"
-#include "vulkan_buffer.h"
-
-#include "bve_imgui.h"
+#include "log.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -20,12 +18,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-#include <stdexcept>
-#include <array>
 #include <chrono>
-#include <iostream>
-
-#include "log.h"
 
 namespace bve
 {

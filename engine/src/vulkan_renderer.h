@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <vector>
-#include <cassert>
 
 #include "entity_manager.h"
 

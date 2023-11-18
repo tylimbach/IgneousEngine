@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "vulkan_descriptors.h"
 
-// std
-#include <cassert>
 #include <stdexcept>
 
 namespace bve
