@@ -10,7 +10,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 cmake_minimum_required (VERSION 3.4)
 
-project ("BabyVulkanEngine")
+project (IgneousEngine)
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/vendor/spdlog")
 
