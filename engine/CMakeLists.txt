@@ -105,7 +105,7 @@ target_link_libraries(
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/pch.h)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE KEXPORT)
+target_compile_definitions(${PROJECT_NAME} PRIVATE IG_EXPORT)
 
 ############## Build SHADERS #######################
  

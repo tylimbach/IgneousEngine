@@ -38,20 +38,20 @@
 #error "Unknown platform!"
 #endif
 
-#ifdef KEXPORT
+#ifdef IG_EXPORT
 // Exports
 #ifdef _MSC_VER
-#define KAPI __declspec(dllexport)
+#define IG_API __declspec(dllexport)
 #else
-#define KAPI __attribute__((visibility("default")))
+#define IG_API __attribute__((visibility("default")))
 #endif
 #else
 // Imports
 #ifdef _MSC_VER
 /** @brief Import/export qualifier */
-#define KAPI __declspec(dllimport)
+#define IG_API __declspec(dllimport)
 #else
 /** @brief Import/export qualifier */
-#define KAPI
+#define IG_API
 #endif
 #endif

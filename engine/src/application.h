@@ -5,7 +5,7 @@
 
 namespace bve
 {
-	KAPI class Application
+	IG_API class Application
 	{
 	public:
 		static constexpr int WIDTH = 1600;

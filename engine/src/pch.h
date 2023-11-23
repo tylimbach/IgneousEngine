@@ -19,7 +19,8 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <concepts>
 
-#ifdef KWINDOWS
+#ifdef IG_WINDOWS
 	#include <Windows.h>
 #endif

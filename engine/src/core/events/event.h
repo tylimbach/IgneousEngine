@@ -3,54 +3,89 @@
 #include "../../defines.h"
 
 #include <functional>
+#include <concepts>
 
 namespace bve
 {
 	enum class EventType
 	{
 		None = 0,
-		MouseButtonPressed = 1,
-		MouseButtonReleased = 2,
-		MouseMoved = 3,
-		MouseScrolled = 4,
-		KeyPressed = 5,
-		KeyReleased = 6,
-		WindowClosed = 7,
-		WindowResized = 8,
-		WindowFocus = 9,
-		WindowLostFocus = 10,
-		WindowMoved = 11
+		MouseButtonPressed,
+		MouseButtonReleased,
+		MouseMoved,
+		MouseScrolled,
+		KeyPressed,
+		KeyReleased,
+		WindowClosed,
+		WindowResized,
+		WindowFocus,
+		WindowLostFocus,
+		WindowMoved
 	};
 
-	KAPI class Event
+	IG_API class Event
 	{
 	public:
 		virtual ~Event() = default;
 
 		bool isHandled_ = false;
 
-		virtual EventType getEventType() const = 0;
 		virtual std::string toString() const = 0;
 	};
 
-	class EventDispatcher
+	template <typename T>
+	concept IsEvent = std::is_base_of_v<Event, T>;
+
+	template <IsEvent T>
+	class EventManager
 	{
 	public:
-		EventDispatcher(Event& event) : event_(event) {}
+		EventManager() {}
 
-		template<typename T, typename F>
-		bool Dispatch(const F& func)
-		{
-			if (event_.getEventType() == T::GetStaticType()) {
-				event_.isHandled_ |= func(static_cast<T&>(event_));
-				return true;
-			}
-			return false;
-		}
+		// todo: implement all
+
+		static void enqueue(T event);
+		static void handle(T event);
+		static void	listen();
+		static void unlisten();
+		static void popFront();
+		static void popBack();
 
 	private:
-		Event& event_;
+		static constexpr int MAX_QUEUE = 100;
 	};
+
+	template <IsEvent T>
+	void EventManager<T>::enqueue(T event) {
+		// Implementation
+	}
+
+	template <IsEvent T>
+	void EventManager<T>::handle(T event) {
+		// Implementation
+	}
+
+	//template <typename T>
+	//IG_API class EventDispatcherHz
+	//{
+	//public:
+	//	EventDispatcherHz(Event& event) : event_(event) {}
+
+	//	template<typename T, typename F>
+	//	bool Dispatch(const F& func)
+	//	{
+	//		if (event_.getEventType() == T::GetStaticType()) {
+	//			event_.isHandled_ |= func(static_cast<T&>(event_));
+	//			return true;
+	//		}
+	//		return false;
+	//	}
+
+	//private:
+	//	Event& event_;
+	//};
+
+
 
 	inline std::ostream& operator<<(std::ostream& os, const Event& e)
 	{

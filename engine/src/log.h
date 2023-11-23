@@ -5,7 +5,7 @@
 
 namespace bve 
 {
-	class KAPI Log
+	class IG_API Log
 	{
 	public:
 		static void init();

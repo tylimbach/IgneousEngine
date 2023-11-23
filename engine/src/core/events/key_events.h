@@ -27,4 +27,23 @@ namespace bve
 		KeyCode keyCode_;
 		bool isRepeated_;
 	};
+
+
+	GunSystem::equip(Gun gun)
+	{
+		// todo: how can i generically support passing a filter into the listen function (optionally)?
+		EventHandle handle;
+		EventManager<KeyPressedEvent>::listen(handle&);
+	}
+
+	GunSystem::unequip(Gun gun)
+	{
+		EventManager<KeyPressedEvent>::unlisten();
+	}
+
+	GunSystem::checkReload()
+	{
+		EventManager<KeyPressedEvent>::process
+	}
+
 }
