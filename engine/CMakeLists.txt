@@ -1,4 +1,4 @@
-﻿include(./.env.cmake OPTIONAL RESULT_VARIABLE LOCAL_ENV)
+include(./.env.cmake OPTIONAL RESULT_VARIABLE LOCAL_ENV)
 message(STATUS "Local .env.cmake: ${LOCAL_ENV}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
@@ -89,7 +89,7 @@ target_include_directories(
     PUBLIC
     ${Vulkan_INCLUDE_DIRS}
     "${PROJECT_SOURCE_DIR}/libs/glfw3"
-    "${PROJECT_SOURCE_DIR}/libs/glm"
+    "${PROJECT_SOURCE_DIR}/libs"
     "${PROJECT_SOURCE_DIR}/vendor/imgui"
     "${PROJECT_SOURCE_DIR}/libs/tinyobjloader"
     "${PROJECT_SOURCE_DIR}/vendor/spdlog/includes"
@@ -102,6 +102,13 @@ target_link_libraries(
     ${GLFW_LIB}
     spdlog::spdlog
 )
+
+if (APPLE)
+find_library(COCOA_LIBRARY Cocoa)
+find_library(OPENGL_LIBRARY OpenGL)
+find_library(IOKIT_LIBRARY IOKit)
+target_link_libraries(${PROJECT_NAME} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${IOKIT_LIBRARY})
+endif()
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/pch.h)
 

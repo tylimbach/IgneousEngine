@@ -4,7 +4,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-set(ENGINE_LIB "${CMAKE_BINARY_DIR}/IgneousEngine.lib")
+if(APPLE)
+    set(ENGINE_LIB_SUFFIX ".a")
+else()
+    set(ENGINE_LIB_SUFFIX ".lib")
+endif()
+
 set(ENGINE_DIR "${PROJECT_SOURCE_DIR}/engine")
 
 message("loading engine lib at ${CMAKE_BINARY_DIR}")
@@ -19,7 +24,8 @@ endif()
 add_executable(app src/application.cpp ${PROJECT_SOURCE_DIR})
 
 find_library(ENGINE_LIB IgneousEngine)
-target_link_libraries(app ${ENGINE_LIB} spdlog::spdlog)
+add_dependencies(app IgneousEngine)
+target_link_libraries(app IgneousEngine spdlog::spdlog)
 target_include_directories(app PRIVATE ${ENGINE_DIR} )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)

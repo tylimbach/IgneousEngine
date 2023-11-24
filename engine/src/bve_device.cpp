@@ -91,8 +91,9 @@ namespace bve
 		auto extensions = getRequiredExtensions();
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		createInfo.ppEnabledExtensionNames = extensions.data();
+        createInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
-		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 		if (enableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers_.size());
 			createInfo.ppEnabledLayerNames = validationLayers_.data();
@@ -180,7 +181,7 @@ namespace bve
 			throw std::runtime_error("failed to create logical device!");
 		}
 
-		vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
+        vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
 		vkGetDeviceQueue(device_, indices.presentFamily, 0, &presentQueue_);
 	}
 
@@ -282,7 +283,10 @@ namespace bve
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 
-		return extensions;
+        // todo: should this be only on apple?
+        extensions.push_back("VK_KHR_portability_enumeration");
+
+        return extensions;
 	}
 
 	void BveDevice::hasGflwRequiredInstanceExtensions()

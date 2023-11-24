@@ -4,8 +4,6 @@
 #include "application.h"
 #include "log.h"
 
-#ifdef KPLATFORM_WINDOWS
-
 extern bve::Application* bve::CreateApplication();
 
 int main(int argc, char** argv) 
@@ -16,5 +14,3 @@ int main(int argc, char** argv)
 	app->run();
 	delete app;
 }
-
-#endif
