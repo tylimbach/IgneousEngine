@@ -25,5 +25,6 @@ namespace bve
 		EntityManager entityManager_{};
 	};
 
-	Application* CreateApplication();
+	Application* createApplication();
+
 }

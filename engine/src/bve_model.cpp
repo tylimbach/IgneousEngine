@@ -25,16 +25,14 @@ namespace std
 
 namespace bve
 {
-	BveModel::BveModel(BveDevice& device, const Builder& builder) : bveDevice_{device}
-	{
+	BveModel::BveModel(BveDevice& device, const Builder& builder) : bveDevice_{device} {
 		createVertexBuffer(builder.vertices);
 		createIndexBuffer(builder.indices);
 	}
 
 	BveModel::~BveModel() = default;
 
-	std::unique_ptr<BveModel> BveModel::createModelFromFile(BveDevice& device, const std::string& filepath)
-	{
+	std::unique_ptr<BveModel> BveModel::createModelFromFile(BveDevice& device, const std::string& filepath) {
 		Builder builder{};
 		builder.loadModel(filepath);
 		return std::make_unique<BveModel>(device, builder);

@@ -1,4 +1,5 @@
 #include <engine.h>
+#include "lua.hpp"
 
 #include <iostream>
 
@@ -9,7 +10,7 @@ public:
 	~ExampleApp() {};
 };
 
-bve::Application* bve::CreateApplication()
+bve::Application* bve::createApplication()
 {
 	return new ExampleApp();
 }

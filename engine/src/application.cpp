@@ -92,9 +92,16 @@ namespace bve
 			const float frameDt = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
+			// process inputs
 			inputController.update(bveWindow.getGLFWWindow());
+
+			// physics
 			movementSystem.update(frameDt);
+
+			// cameras
 			cameraSystem.update(aspectRatio);
+
+			// render
 
 			if (!renderer.renderFrame(frameDt)) {
 				aspectRatio = renderer.getAspectRatio();

@@ -4,13 +4,14 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "../defines.h"
 
 #include "../bve_model.h"
 #include <memory>
 
 namespace bve
 {
-	struct TransformComponent
+	struct IG_API TransformComponent
 	{
 		glm::vec3 translation{};
 		glm::vec3 scale{1.f, 1.f, 1.f};
@@ -80,25 +81,25 @@ namespace bve
 		}
 	};
 
-	struct MoveComponent
+	struct IG_API MoveComponent
 	{
 		glm::vec3 velocity{.0f, .0f, .0f};
 		glm::vec3 acceleration{.0f, .0f, .0f};
 	};
 
-	struct RotateComponent
+	struct IG_API RotateComponent
 	{
 		glm::vec3 velocity{.0f, .0f, .0f};
 		glm::vec3 acceleration{.0f, .0f, .0f};
 	};
 
-	enum class ProjectionMode
+	enum class IG_API ProjectionMode
 	{
 		PERSPECTIVE,
 		ORTHOGRAPHIC,
 	};
 
-	struct CameraComponent
+	struct IG_API CameraComponent
 	{
 		ProjectionMode mode{ProjectionMode::PERSPECTIVE};
 
@@ -111,20 +112,20 @@ namespace bve
 		glm::mat4 inverseViewMatrix{1.f};
 	};
 
-	struct RenderComponent
+	struct IG_API RenderComponent
 	{
 		std::unique_ptr<BveModel> model;
 		glm::vec3 color{.0f, .0f, .0f};
 	};
 
-	struct PointLightComponent
+	struct IG_API PointLightComponent
 	{
 		glm::vec4 color{.0f, .0f, .0f, .0f};
 	};
 
-	struct PlayerTag {};
+	struct IG_API PlayerTag {};
 
-	struct ActiveCameraTag {};
+	struct IG_API ActiveCameraTag {};
 
-	struct SelectedTag {};
+	struct IG_API SelectedTag {};
 }

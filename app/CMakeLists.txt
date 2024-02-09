@@ -21,12 +21,19 @@ if(NOT TARGET spdlog)
     find_package(spdlog REQUIRED)
 endif()
 
-add_executable(app src/application.cpp ${PROJECT_SOURCE_DIR})
+add_executable(app src/application.cpp ${PROJECT_SOURCE_DIR} "src/lua_scripts.h")
 
 find_library(ENGINE_LIB IgneousEngine)
 add_dependencies(app IgneousEngine)
 target_link_libraries(app IgneousEngine spdlog::spdlog)
 target_include_directories(app PRIVATE ${ENGINE_DIR} )
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE )
+ # target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${PROJECT_NAME} PRIVATE )
+ # target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 
